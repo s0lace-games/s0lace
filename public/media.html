@@ -149,7 +149,7 @@
 
       .media-poster {
         width: 100%;
-        aspect-ratio: 2 / 3; /* poster ratio */
+        aspect-ratio: 2 / 3; /* poster */
         border-radius: 10px;
         background: radial-gradient(circle at top, #1f2937, #020617);
         display: flex;
@@ -157,10 +157,6 @@
         justify-content: center;
         overflow: hidden;
         position: relative;
-        font-size: 12px;
-        color: var(--fg-dim);
-        text-align: center;
-        padding: 6px;
       }
 
       .media-poster img {
@@ -222,7 +218,7 @@
         S0LACE
       </div>
       <nav class="site-nav">
-        <a href="index.html">Hone</a>
+        <a href="index.html">Home</a>
         <a href="games.html">Games</a>
         <a href="media.html" class="active">Media</a>
         <a href="settings.html">Settings</a>
@@ -231,7 +227,7 @@
 
     <main>
       <h1>Media Library</h1>
-      <p class="sub">Posters + titles from TMDB. Click to open the proxied player.</p>
+      <p class="sub">Click a poster to open it in the S0LACE media player.</p>
 
       <!-- SEARCH -->
       <div class="media-search-wrap">
@@ -243,132 +239,63 @@
         />
       </div>
 
-      <div class="media-grid" id="media-grid"></div>
+      <!-- GRID -->
+      <div class="media-grid" id="media-grid">
+        <!-- data-title = used for search
+             data-src   = iframe URL to load in media-player.html -->
+        <a
+          class="media-card"
+          href="#"
+          data-title="interstellar"
+          data-src="https://example.com/interstellar-embed"
+        >
+          <div class="media-poster">
+            <img src="posters/interstellar.jpg" alt="Interstellar" />
+            <div class="media-overlay">Interstellar</div>
+          </div>
+        </a>
+
+        <a
+          class="media-card"
+          href="#"
+          data-title="inception"
+          data-src="https://example.com/inception-embed"
+        >
+          <div class="media-poster">
+            <img src="posters/inception.jpg" alt="Inception" />
+            <div class="media-overlay">Inception</div>
+          </div>
+        </a>
+
+        <a
+          class="media-card"
+          href="#"
+          data-title="spider man into the spider verse"
+          data-src="https://drive.google.com/file/d/1V3Bq0lrDQUxJay5DDs3gK69ZvRNb1j2u/view"
+        >
+          <div class="media-poster">
+            <img src="posters/spiderverse.jpg" alt="Spider-Verse" />
+            <div class="media-overlay">Spider-Verse</div>
+          </div>
+        </a>
+
+        <!-- add more media-card blocks here -->
+      </div>
 
       <div id="media-empty">No media matches that search.</div>
     </main>
 
     <script>
-      // ================ CONFIG ================
-
-      // Put your TMDB API key here
-      const TMDB_API_KEY = "2d1351cf74f73892042699d0431b799a"; // <- replace this
-      const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w342";
-
-      // List of items in your media library.
-      // tmdbId = TMDB movie ID
-      // sourceUrl = the REAL URL you want to proxy in the player page
-      const MEDIA_ITEMS = [
-        {
-          tmdbId: 157336, // Interstellar
-          sourceUrl: "https://example.com/interstellar-player",
-        },
-        {
-          tmdbId: 27205, // Inception
-          sourceUrl: "https://example.com/inception-player",
-        },
-        {
-          tmdbId: 324857, // Spider-Man: Into the Spider-Verse
-          sourceUrl: "https://drive.google.com/file/d/1V3Bq0lrDQUxJay5DDs3gK69ZvRNb1j2u/view",
-        },
-        // add more:
-        // { tmdbId: 603, sourceUrl: "https://example.com/the-matrix" },
-      ];
-
-      // ================ ELEMENTS ================
-      const grid = document.getElementById("media-grid");
       const searchInput = document.getElementById("media-search");
+      const cards = Array.from(document.querySelectorAll(".media-card"));
       const emptyMsg = document.getElementById("media-empty");
-      let cardElements = [];
 
-      // ================ BUILD CARDS ================
-      async function fetchTMDBDetails(tmdbId) {
-        if (!TMDB_API_KEY || TMDB_API_KEY === "2d1351cf74f73892042699d0431b799a") {
-          return null;
-        }
-
-        try {
-          const res = await fetch(
-            `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${TMDB_API_KEY}`
-          );
-          if (!res.ok) return null;
-          return await res.json();
-        } catch {
-          return null;
-        }
-      }
-
-      function createCard(item, data) {
-        const title =
-          (data && (data.title || data.name)) || `TMDB #${item.tmdbId}`;
-        const posterPath = data && data.poster_path;
-        const lowerTitle = title.toLowerCase();
-
-        const a = document.createElement("a");
-        a.className = "media-card";
-        a.href = "#";
-        a.dataset.title = lowerTitle;
-        a.dataset.src = item.sourceUrl || "";
-
-        const poster = document.createElement("div");
-        poster.className = "media-poster";
-
-        const img = document.createElement("img");
-        if (posterPath) {
-          img.src = TMDB_IMAGE_BASE + posterPath;
-          img.alt = title;
-        } else {
-          img.style.display = "none";
-          poster.textContent = title;
-        }
-
-        const overlay = document.createElement("div");
-        overlay.className = "media-overlay";
-        overlay.textContent = title;
-
-        poster.appendChild(img);
-        poster.appendChild(overlay);
-        a.appendChild(poster);
-
-        // click → go to player with proxied link param
-        a.addEventListener("click", (e) => {
-          e.preventDefault();
-          if (!item.sourceUrl) return;
-          const target =
-            "mediaplayer.html?src=" +
-            encodeURIComponent(item.sourceUrl) +
-            "&title=" +
-            encodeURIComponent(title);
-          window.location.href = target;
-        });
-
-        return a;
-      }
-
-      async function initMediaGrid() {
-        grid.innerHTML = "";
-        cardElements = [];
-
-        for (const item of MEDIA_ITEMS) {
-          let data = null;
-          if (item.tmdbId) {
-            data = await fetchTMDBDetails(item.tmdbId);
-          }
-          const card = createCard(item, data);
-          grid.appendChild(card);
-          cardElements.push(card);
-        }
-
-        applySearchFilter(); // initial
-      }
-
-      // ================ SEARCH FILTER ================
       function applySearchFilter() {
         const q = (searchInput.value || "").trim().toLowerCase();
         let visibleCount = 0;
 
-        cardElements.forEach((card) => {
-          const title = card.dataset.title || "";
+        cards.forEach((card) => {
+          const title = (card.dataset.title || "").toLowerCase();
           const match = !q || title.includes(q);
           card.style.display = match ? "" : "none";
           if (match) visibleCount++;
@@ -383,9 +310,28 @@
         searchInput.addEventListener("input", applySearchFilter);
       }
 
-      document.addEventListener("DOMContentLoaded", () => {
-        initMediaGrid();
+      cards.forEach((card) => {
+        card.addEventListener("click", (e) => {
+          e.preventDefault();
+          const src = card.dataset.src;
+          const title =
+            card.querySelector(".media-overlay")?.textContent ||
+            card.dataset.title ||
+            "Untitled";
+
+          if (!src) return;
+
+          const url =
+            "mediaplayer.html?src=" +
+            encodeURIComponent(src) +
+            "&title=" +
+            encodeURIComponent(title);
+
+          window.location.href = url;
+        });
       });
+
+      document.addEventListener("DOMContentLoaded", applySearchFilter);
     </script>
   </body>
 </html>
