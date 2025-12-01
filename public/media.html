@@ -149,7 +149,7 @@
 
       .media-poster {
         width: 100%;
-        aspect-ratio: 2 / 3; /* poster style */
+        aspect-ratio: 2 / 3; /* poster ratio */
         border-radius: 10px;
         background: radial-gradient(circle at top, #1f2937, #020617);
         display: flex;
@@ -157,6 +157,10 @@
         justify-content: center;
         overflow: hidden;
         position: relative;
+        font-size: 12px;
+        color: var(--fg-dim);
+        text-align: center;
+        padding: 6px;
       }
 
       .media-poster img {
@@ -215,10 +219,10 @@
   <body>
     <header class="site-header">
       <div class="site-title">
-        S0LACE <span>media</span>
+        S0LACE
       </div>
       <nav class="site-nav">
-        <a href="index.html">Proxy</a>
+        <a href="index.html">Hone</a>
         <a href="games.html">Games</a>
         <a href="media.html" class="active">Media</a>
         <a href="settings.html">Settings</a>
@@ -227,7 +231,7 @@
 
     <main>
       <h1>Media Library</h1>
-      <p class="sub">Pick something to watch. Player wiring comes next.</p>
+      <p class="sub">Posters + titles from TMDB. Click to open the proxied player.</p>
 
       <!-- SEARCH -->
       <div class="media-search-wrap">
@@ -239,104 +243,149 @@
         />
       </div>
 
-      <div class="media-grid" id="media-grid">
-        <!-- Example items – change posters + titles + href later -->
-        <a
-          class="media-card"
-          href="#"
-          data-title="interstellar"
-        >
-          <div class="media-poster">
-            <img src="posters/interstellar.jpg" alt="Interstellar" />
-            <div class="media-overlay">Interstellar</div>
-          </div>
-        </a>
-
-        <a
-          class="media-card"
-          href="#"
-          data-title="inception"
-        >
-          <div class="media-poster">
-            <img src="posters/inception.jpg" alt="Inception" />
-            <div class="media-overlay">Inception</div>
-          </div>
-        </a>
-
-        <a
-          class="media-card"
-          href="#"
-          data-title="spider man into the spider verse"
-        >
-          <div class="media-poster">
-            <img src="posters/spiderverse.jpg" alt="Spider-Verse" />
-            <div class="media-overlay">Spider-Verse</div>
-          </div>
-        </a>
-
-        <a
-          class="media-card"
-          href="#"
-          data-title="the dark knight"
-        >
-          <div class="media-poster">
-            <img src="posters/darkknight.jpg" alt="The Dark Knight" />
-            <div class="media-overlay">The Dark Knight</div>
-          </div>
-        </a>
-
-        <a
-          class="media-card"
-          href="#"
-          data-title="soul"
-        >
-          <div class="media-poster">
-            <img src="posters/soul.jpg" alt="Soul" />
-            <div class="media-overlay">Soul</div>
-          </div>
-        </a>
-
-        <a
-          class="media-card"
-          href="#"
-          data-title="your name"
-        >
-          <div class="media-poster">
-            <img src="posters/yourname.jpg" alt="Your Name" />
-            <div class="media-overlay">Your Name</div>
-          </div>
-        </a>
-
-        <!-- add more media-card blocks with data-title + poster img -->
-      </div>
+      <div class="media-grid" id="media-grid"></div>
 
       <div id="media-empty">No media matches that search.</div>
     </main>
 
     <script>
-      const mediaSearchInput = document.getElementById("media-search");
-      const mediaCards = Array.from(document.querySelectorAll(".media-card"));
-      const mediaEmptyMsg = document.getElementById("media-empty");
+      // ================ CONFIG ================
 
-      function filterMedia() {
-        const q = mediaSearchInput.value.trim().toLowerCase();
+      // Put your TMDB API key here
+      const TMDB_API_KEY = "2d1351cf74f73892042699d0431b799a"; // <- replace this
+      const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w342";
+
+      // List of items in your media library.
+      // tmdbId = TMDB movie ID
+      // sourceUrl = the REAL URL you want to proxy in the player page
+      const MEDIA_ITEMS = [
+        {
+          tmdbId: 157336, // Interstellar
+          sourceUrl: "https://example.com/interstellar-player",
+        },
+        {
+          tmdbId: 27205, // Inception
+          sourceUrl: "https://example.com/inception-player",
+        },
+        {
+          tmdbId: 324857, // Spider-Man: Into the Spider-Verse
+          sourceUrl: "https://drive.google.com/file/d/1V3Bq0lrDQUxJay5DDs3gK69ZvRNb1j2u/view",
+        },
+        // add more:
+        // { tmdbId: 603, sourceUrl: "https://example.com/the-matrix" },
+      ];
+
+      // ================ ELEMENTS ================
+      const grid = document.getElementById("media-grid");
+      const searchInput = document.getElementById("media-search");
+      const emptyMsg = document.getElementById("media-empty");
+      let cardElements = [];
+
+      // ================ BUILD CARDS ================
+      async function fetchTMDBDetails(tmdbId) {
+        if (!TMDB_API_KEY || TMDB_API_KEY === "2d1351cf74f73892042699d0431b799a") {
+          return null;
+        }
+
+        try {
+          const res = await fetch(
+            `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${TMDB_API_KEY}`
+          );
+          if (!res.ok) return null;
+          return await res.json();
+        } catch {
+          return null;
+        }
+      }
+
+      function createCard(item, data) {
+        const title =
+          (data && (data.title || data.name)) || `TMDB #${item.tmdbId}`;
+        const posterPath = data && data.poster_path;
+        const lowerTitle = title.toLowerCase();
+
+        const a = document.createElement("a");
+        a.className = "media-card";
+        a.href = "#";
+        a.dataset.title = lowerTitle;
+        a.dataset.src = item.sourceUrl || "";
+
+        const poster = document.createElement("div");
+        poster.className = "media-poster";
+
+        const img = document.createElement("img");
+        if (posterPath) {
+          img.src = TMDB_IMAGE_BASE + posterPath;
+          img.alt = title;
+        } else {
+          img.style.display = "none";
+          poster.textContent = title;
+        }
+
+        const overlay = document.createElement("div");
+        overlay.className = "media-overlay";
+        overlay.textContent = title;
+
+        poster.appendChild(img);
+        poster.appendChild(overlay);
+        a.appendChild(poster);
+
+        // click → go to player with proxied link param
+        a.addEventListener("click", (e) => {
+          e.preventDefault();
+          if (!item.sourceUrl) return;
+          const target =
+            "media-player.html?src=" +
+            encodeURIComponent(item.sourceUrl) +
+            "&title=" +
+            encodeURIComponent(title);
+          window.location.href = target;
+        });
+
+        return a;
+      }
+
+      async function initMediaGrid() {
+        grid.innerHTML = "";
+        cardElements = [];
+
+        for (const item of MEDIA_ITEMS) {
+          let data = null;
+          if (item.tmdbId) {
+            data = await fetchTMDBDetails(item.tmdbId);
+          }
+          const card = createCard(item, data);
+          grid.appendChild(card);
+          cardElements.push(card);
+        }
+
+        applySearchFilter(); // initial
+      }
+
+      // ================ SEARCH FILTER ================
+      function applySearchFilter() {
+        const q = (searchInput.value || "").trim().toLowerCase();
         let visibleCount = 0;
 
-        mediaCards.forEach((card) => {
-          const title = (card.dataset.title || "").toLowerCase();
+        cardElements.forEach((card) => {
+          const title = card.dataset.title || "";
           const match = !q || title.includes(q);
           card.style.display = match ? "" : "none";
           if (match) visibleCount++;
         });
 
-        if (mediaEmptyMsg) {
-          mediaEmptyMsg.style.display = q && visibleCount === 0 ? "block" : "none";
+        if (emptyMsg) {
+          emptyMsg.style.display = q && visibleCount === 0 ? "block" : "none";
         }
       }
 
-      if (mediaSearchInput) {
-        mediaSearchInput.addEventListener("input", filterMedia);
+      if (searchInput) {
+        searchInput.addEventListener("input", applySearchFilter);
       }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        initMediaGrid();
+      });
     </script>
   </body>
 </html>
