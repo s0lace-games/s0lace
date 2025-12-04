@@ -10,6 +10,16 @@
 
     <link rel="shortcut icon" content="favicon.ico" />
     <link rel="stylesheet" href="index.css" />
+
+    <!-- Scramjet stack: SAME AS HOME -->
+    <script src="/scram/scramjet.all.js"></script>
+    <script src="baremux/index.js" defer></script>
+    <script src="epoxy/index.js" defer></script>
+    <script src="register-sw.js" defer></script>
+    <script src="search.js" defer></script>
+    <script src="index.js" defer></script>
+
+    <!-- global settings / tab cloak -->
     <script src="global-hub.js" defer></script>
   </head>
 
@@ -62,7 +72,7 @@
       titleEl.textContent = title;
 
       if (rawSrc) {
-        // IMPORTANT: rawSrc ALREADY has /scramjet/... from media.html
+        // rawSrc already contains /scramjet/... from media.html
         frame.src = rawSrc;
         if (openLink) openLink.href = rawSrc;
       } else {
@@ -72,6 +82,7 @@
         frame.replaceWith(msg);
       }
 
+      // reload the iframe
       reloadBtn?.addEventListener("click", () => {
         if (!frame) return;
         try {
@@ -85,6 +96,7 @@
         }
       });
 
+      // fullscreen toggle
       fullBtn?.addEventListener("click", () => {
         if (!frame) return;
         if (frame.requestFullscreen) frame.requestFullscreen();
