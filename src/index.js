@@ -11,72 +11,93 @@ import { baremuxPath } from "@mercuryworkshop/bare-mux/node";
 
 const publicPath = fileURLToPath(new URL("../public/", import.meta.url));
 
-// ===== WISP CONFIG =====
+/* ===========================
+      WISP CONFIGURATION
+   =========================== */
 logging.set_level(logging.NONE);
 Object.assign(wisp.options, {
   allow_udp_streams: false,
-  // DO NOT block poster or video hosts
-  hostname_blacklist: [],
-  dns_servers: ["1.1.1.1", "1.0.0.1"]
+  hostname_blacklist: [],             // ← DO NOT block poster hosts
+  dns_servers: ["1.1.1.1", "1.0.0.1"],
 });
 
 const fastify = Fastify({
   serverFactory: (handler) => {
     return createServer()
       .on("request", (req, res) => {
-        // Required for Scramjet
+        // REQUIRED for Scramjet proxying
         res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
         res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
         handler(req, res);
       })
       .on("upgrade", (req, socket, head) => {
-        if (req.url.endsWith("/wisp/")) wisp.routeRequest(req, socket, head);
-        else socket.end();
+        if (req.url.endsWith("/wisp/")) {
+          wisp.routeRequest(req, socket, head);
+        } else {
+          socket.end();
+        }
       });
   },
 });
 
-// ===== STATIC PUBLIC FILES =====
+/* ===========================
+       STATIC PUBLIC FILES
+   =========================== */
 fastify.register(fastifyStatic, {
   root: publicPath,
   decorateReply: true,
 });
 
-// ===== SCRAMJET ROUTING (MAIN FIX) =====
-// This is the path Scramjet uses to proxy ANY remote website.
+/* ===================================
+   SCRAMJET RUNTIME + PROXY ROUTING
+   =================================== */
+
+/*
+  /scramjet/* → Remote URLs are proxied here
+  Example:
+    /scramjet/https://cinemaos.live/player/1234
+*/
 fastify.register(fastifyStatic, {
   root: scramjetPath,
   prefix: "/scramjet/",
   decorateReply: false,
 });
 
-// WASM / JS internal Scramjet build
+/*
+  /scram/* → WASM, sync.js, scramjet runtime files
+  These MUST be separate from the proxy prefix.
+*/
 fastify.register(fastifyStatic, {
   root: scramjetPath,
   prefix: "/scram/",
   decorateReply: false,
 });
 
-// Epoxy transport
+/* ===========================
+       TRANSPORT LAYERS
+   =========================== */
 fastify.register(fastifyStatic, {
   root: epoxyPath,
   prefix: "/epoxy/",
   decorateReply: false,
 });
 
-// Bare-MUX transport
 fastify.register(fastifyStatic, {
   root: baremuxPath,
   prefix: "/baremux/",
   decorateReply: false,
 });
 
-// ===== 404 PAGE =====
+/* ===========================
+             404
+   =========================== */
 fastify.setNotFoundHandler((req, reply) => {
   return reply.code(404).type("text/html").sendFile("404.html");
 });
 
-// ===== SERVER START =====
+/* ===========================
+       START SERVER
+   =========================== */
 fastify.server.on("listening", () => {
   const address = fastify.server.address();
   console.log("Listening on:");
