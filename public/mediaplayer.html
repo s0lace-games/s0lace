@@ -2,23 +2,21 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>S0LACE • Media Player</title>
 
-    <link rel="stylesheet" href="index.css" />
     <link rel="shortcut icon" content="favicon.ico" />
+    <link rel="stylesheet" href="index.css" />
 
-    <!-- BareMux + Epoxy -->
+    <!-- BareMux + Epoxy (required by Scramjet) -->
     <script src="baremux/index.js"></script>
     <script src="epoxy/index.js"></script>
 
-    <!-- Service worker + globals -->
+    <!-- Service worker + global scripts -->
     <script src="register-sw.js" defer></script>
     <script src="global-hub.js" defer></script>
 
+    <!-- Player local styles -->
     <style>
       .player-loading {
         position: absolute;
@@ -38,55 +36,58 @@
         text-align: center;
         padding: 16px;
       }
-      .player-frame-wrap {
-        position: relative;
+      .player-loading span {
+        margin-top: 6px;
+        opacity: 0.7;
       }
 
-      /* A2-style compact episode list */
-      #tv-section {
-        margin-top: 26px;
+      /* space for TV sidebar */
+      .player-frame-wrap {
+        position: relative;
+        margin-right: 260px;
+      }
+
+      /* TV SIDEBAR */
+      .tv-sidebar {
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 260px;
+        height: 100%;
+        background: rgba(10, 10, 10, 0.95);
+        border-left: 1px solid var(--stroke);
+        padding: 16px;
+        overflow-y: auto;
         display: none;
+        z-index: 3;
       }
-      #tv-section h2 {
-        font-size: 18px;
-        margin-bottom: 8px;
-      }
-      #season-select {
-        padding: 6px 8px;
-        background: #111;
-        border: 1px solid #333;
-        border-radius: 6px;
+
+      .tv-sidebar h3 {
+        margin: 0 0 10px;
+        font-size: 13px;
         color: var(--fg);
       }
-      .episode-list {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        margin-top: 14px;
+
+      .tv-sidebar select {
+        width: 100%;
+        margin-bottom: 12px;
+        padding: 6px;
+        background: #111;
+        color: var(--fg);
+        border: 1px solid #333;
+        border-radius: 5px;
       }
-      .episode-row {
-        display: flex;
-        gap: 12px;
+
+      .tv-sidebar button {
+        width: 100%;
         padding: 8px;
-        border: 1px solid #222;
-        border-radius: 8px;
-        background: #0a0a0a;
-        cursor: pointer;
-        transition: 0.15s ease;
-      }
-      .episode-row:hover {
-        transform: scale(1.015);
-        background: #0f0f0f;
-      }
-      .ep-thumb {
-        width: 120px;
-        height: 68px;
-        object-fit: cover;
-        border-radius: 4px;
-      }
-      .ep-title {
-        font-size: 14px;
+        margin-top: 6px;
+        background: var(--accent);
+        border: none;
+        color: black;
         font-weight: 600;
+        cursor: pointer;
+        border-radius: 8px;
       }
     </style>
   </head>
@@ -115,6 +116,7 @@
       </div>
 
       <div class="player-frame-wrap">
+        <!-- Loading overlay -->
         <div id="player-loading" class="player-loading">
           CONNECTING TO PROXY…
           <span id="player-loading-sub">
@@ -122,93 +124,109 @@
           </span>
         </div>
 
+        <!-- Actual player iframe -->
         <iframe
           id="media-frame"
+          src="about:blank"
           allowfullscreen
           allow="fullscreen; picture-in-picture; encrypted-media"
         ></iframe>
       </div>
 
-      <div id="player-error" class="no-src" style="display:none;">
-        No media URL provided.
+      <!-- TV Sidebar -->
+      <div class="tv-sidebar" id="tv-sidebar">
+        <h3>TV Episodes</h3>
+
+        <label>Season</label>
+        <select id="tv-season"></select>
+
+        <label>Episode</label>
+        <select id="tv-episode"></select>
+
+        <button id="tv-load">LOAD EPISODE</button>
       </div>
 
-      <!-- TV SHOW UI -->
-      <div id="tv-section">
-        <h2>Season</h2>
-        <select id="season-select"></select>
-
-        <h2 style="margin-top:14px;">Episodes</h2>
-        <div id="episode-list" class="episode-list"></div>
+      <div id="player-error" class="no-src" style="display:none;">
+        No media URL provided.
       </div>
     </main>
 
     <script>
-      const TMDB_KEY = "2d1351cf74f73892042699d0431b799a";
-      const IMG_BASE = "https://image.tmdb.org/t/p/w300";
-
       (async () => {
         const params = new URLSearchParams(window.location.search);
-        const src = params.get("src");
+
+        const type  = params.get("type");   // movie | show
+        const id    = params.get("id");
         const title = params.get("title") || "Untitled";
+
         const frame = document.getElementById("media-frame");
         const titleEl = document.getElementById("player-title");
         const errorEl = document.getElementById("player-error");
+        const frameWrap = document.querySelector(".player-frame-wrap");
+        const openNewTabBtn = document.getElementById("open-new-tab");
         const loadingEl = document.getElementById("player-loading");
         const loadingSub = document.getElementById("player-loading-sub");
-        const openNewTabBtn = document.getElementById("open-new-tab");
 
-        const tvSection = document.getElementById("tv-section");
-        const seasonSelect = document.getElementById("season-select");
-        const episodeList = document.getElementById("episode-list");
+        // Sidebar refs
+        const tvSidebar = document.getElementById("tv-sidebar");
+        const tvSeason = document.getElementById("tv-season");
+        const tvEpisode = document.getElementById("tv-episode");
+        const tvLoad = document.getElementById("tv-load");
 
-        if (titleEl) titleEl.textContent = title;
+        titleEl.textContent = title;
+
+        // Build src
+        let src = params.get("src");
+
+        if (!src && type && id) {
+          if (type === "movie") {
+            src = `/scramjet/https://cinemaos.live/player/${id}`;
+            tvSidebar.style.display = "none";
+          }
+          if (type === "show") {
+            src = `/scramjet/https://cinemaos.live/tv/${id}/1/1`;
+            tvSidebar.style.display = "block";
+          }
+        }
 
         if (!src) {
-          frame.style.display = "none";
+          frameWrap.style.display = "none";
           errorEl.style.display = "flex";
+          errorEl.textContent = "No media URL provided.";
           return;
         }
 
-        if (openNewTabBtn) {
-          openNewTabBtn.addEventListener("click", () => {
-            window.open(src, "_blank");
-          });
-        }
+        openNewTabBtn.addEventListener("click", () => window.open(src, "_blank"));
 
-        // -----------------------
-        // INIT BAREMUX
-        // -----------------------
+        // Setup BareMux/Epoxy transport
         try {
           const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
           const wispUrl =
             (location.protocol === "https:" ? "wss" : "ws") +
-            "://" +
-            location.host +
-            "/wisp/";
+            "://" + location.host + "/wisp/";
 
           if ((await connection.getTransport()) !== "/epoxy/index.mjs") {
             await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
           }
         } catch (err) {
           console.error(err);
+          loadingSub.textContent = "Transport failed — the page may still load.";
         }
 
-        // Timeouts
+        // Loading timeouts
         let longTimeout = setTimeout(() => {
-          if (loadingSub) {
-            loadingSub.textContent =
-              "This is taking longer than usual. The media host or proxy might be slow.";
-          }
+          loadingSub.textContent =
+            "Slow response — proxy or host may be lagging.";
         }, 8000);
 
         let hardTimeout = setTimeout(() => {
           loadingEl.style.display = "none";
           errorEl.style.display = "flex";
           errorEl.textContent =
-            "The media did not finish loading. It may be blocked or timed out.";
+            "Media failed to finish loading. It may be blocked or offline.";
         }, 25000);
 
+        // Frame load handler
         frame.addEventListener("load", () => {
           loadingEl.style.display = "none";
           clearTimeout(longTimeout);
@@ -217,98 +235,50 @@
 
         frame.src = src;
 
-        // -----------------------
-        // TV / MOVIE DETECTION
-        // -----------------------
-        const match = decodeURIComponent(src).match(/player\/(\d+)/);
-        if (!match) return;
+        // ===== TV SHOW MODE =====
+        if (type === "show") {
+          const tmdbKey = "2d1351cf74f73892042699d0431b799a";
 
-        const tmdbID = match[1];
+          // Fetch seasons
+          const tvData = await fetch(
+            `https://api.themoviedb.org/3/tv/${id}?api_key=${tmdbKey}&language=en-US`
+          ).then(r => r.json());
 
-        // Check movie endpoint
-        const movieCheck = await fetch(
-          `https://api.themoviedb.org/3/movie/${tmdbID}?api_key=${TMDB_KEY}`
-        );
+          // Season list
+          tvData.seasons.forEach(s => {
+            if (s.season_number === 0) return;
+            const opt = document.createElement("option");
+            opt.value = s.season_number;
+            opt.textContent = "Season " + s.season_number;
+            tvSeason.appendChild(opt);
+          });
 
-        if (movieCheck.ok) {
-          // MOVIE — nothing else needed
-          tvSection.style.display = "none";
-          return;
-        }
+          // When season changes → load episodes
+          tvSeason.addEventListener("change", async () => {
+            const seasonNum = tvSeason.value;
+            tvEpisode.innerHTML = "";
 
-        // TV SHOW
-        const tvDataRes = await fetch(
-          `https://api.themoviedb.org/3/tv/${tmdbID}?api_key=${TMDB_KEY}`
-        );
-        if (!tvDataRes.ok) return;
+            const seasonInfo = await fetch(
+              `https://api.themoviedb.org/3/tv/${id}/season/${seasonNum}?api_key=${tmdbKey}&language=en-US`
+            ).then(r => r.json());
 
-        const tvData = await tvDataRes.json();
-        titleEl.textContent = tvData.name || title;
+            seasonInfo.episodes.forEach(ep => {
+              const opt = document.createElement("option");
+              opt.value = ep.episode_number;
+              opt.textContent = `Episode ${ep.episode_number}: ${ep.name}`;
+              tvEpisode.appendChild(opt);
+            });
+          });
 
-        tvSection.style.display = "block";
+          // Load first season
+          tvSeason.dispatchEvent(new Event("change"));
 
-        // Build season dropdown
-        seasonSelect.innerHTML = "";
-        tvData.seasons.forEach((s) => {
-          if (s.season_number === 0) return;
-          let opt = document.createElement("option");
-          opt.value = s.season_number;
-          opt.textContent = "Season " + s.season_number;
-          seasonSelect.appendChild(opt);
-        });
-
-        seasonSelect.onchange = () => {
-          loadSeason(tmdbID, parseInt(seasonSelect.value));
-        };
-
-        loadSeason(tmdbID, 1);
-
-        // -----------------------
-        // LOAD EPISODES
-        // -----------------------
-        async function loadSeason(id, seasonNum) {
-          const res = await fetch(
-            `https://api.themoviedb.org/3/tv/${id}/season/${seasonNum}?api_key=${TMDB_KEY}`
-          );
-          const data = await res.json();
-
-          episodeList.innerHTML = "";
-
-          data.episodes.forEach((ep) => {
-            const row = document.createElement("div");
-            row.className = "episode-row";
-
-            const img = document.createElement("img");
-            img.src = ep.still_path
-              ? IMG_BASE + ep.still_path
-              : "thumbs/placeholder-poster.png";
-            img.className = "ep-thumb";
-
-            const meta = document.createElement("div");
-            const titleDiv = document.createElement("div");
-            titleDiv.className = "ep-title";
-            titleDiv.textContent =
-              `E${ep.episode_number} • ${ep.name}`;
-
-            meta.appendChild(titleDiv);
-
-            row.appendChild(img);
-            row.appendChild(meta);
-
-            row.onclick = () => {
-              const episodeURL =
-                "/scramjet/https://cinemaos.live/player/" +
-                id +
-                "?s=" +
-                seasonNum +
-                "&e=" +
-                ep.episode_number;
-
-              frame.src = episodeURL;
-              titleEl.textContent = `${ep.name} (S${seasonNum}E${ep.episode_number})`;
-            };
-
-            episodeList.appendChild(row);
+          // Load selected episode
+          tvLoad.addEventListener("click", () => {
+            const season = tvSeason.value;
+            const ep = tvEpisode.value;
+            const newSrc = `/scramjet/https://cinemaos.live/tv/${id}/${season}/${ep}`;
+            frame.src = newSrc;
           });
         }
       })();
