@@ -11,14 +11,42 @@
     <link rel="shortcut icon" content="favicon.ico" />
     <link rel="stylesheet" href="index.css" />
 
-    <!-- BareMux + Epoxy + transport boot for Scramjet backend -->
+    <!-- BareMux + Epoxy for Scramjet backend -->
     <script src="baremux/index.js"></script>
     <script src="epoxy/index.js"></script>
-    <script src="transport-boot.js" defer></script>
 
-    <!-- Service worker + your global stuff -->
+    <!-- Service worker + global stuff -->
     <script src="register-sw.js" defer></script>
     <script src="global-hub.js" defer></script>
+
+    <!-- tiny local styles for loading overlay -->
+    <style>
+      .player-loading {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        font-size: 9px;
+        color: var(--fg-dim);
+        background: radial-gradient(
+          circle at top,
+          rgba(0, 0, 0, 0.95),
+          rgba(0, 0, 0, 0.98)
+        );
+        z-index: 2;
+        text-align: center;
+        padding: 16px;
+      }
+      .player-loading span {
+        margin-top: 6px;
+        opacity: 0.7;
+      }
+      .player-frame-wrap {
+        position: relative;
+      }
+    </style>
   </head>
 
   <body class="media-player-page">
@@ -47,6 +75,14 @@
       </div>
 
       <div class="player-frame-wrap">
+        <!-- loading overlay -->
+        <div id="player-loading" class="player-loading">
+          CONNECTING TO PROXY…
+          <span id="player-loading-sub">
+            If this takes more than a few seconds, the media host or proxy might be slow.
+          </span>
+        </div>
+
         <iframe
           id="media-frame"
           src="about:blank"
@@ -61,7 +97,7 @@
     </main>
 
     <script>
-      (function () {
+      (async () => {
         const params = new URLSearchParams(window.location.search);
         const src = params.get("src");
         const title = params.get("title") || "Untitled";
@@ -71,14 +107,12 @@
         const errorEl = document.getElementById("player-error");
         const frameWrap = document.querySelector(".player-frame-wrap");
         const openNewTabBtn = document.getElementById("open-new-tab");
+        const loadingEl = document.getElementById("player-loading");
+        const loadingSub = document.getElementById("player-loading-sub");
 
-        // Set title from query
-        if (titleEl) {
-          titleEl.textContent = title;
-        }
+        if (titleEl) titleEl.textContent = title;
 
         if (!src) {
-          // nothing to load
           if (frameWrap) frameWrap.style.display = "none";
           if (errorEl) {
             errorEl.style.display = "flex";
@@ -87,15 +121,63 @@
           return;
         }
 
-        // Just iframe the src exactly as passed (already /scramjet/… from media.html)
-        if (frame) {
-          frame.src = src;
-        }
-
+        // Make "open in new tab" always available
         if (openNewTabBtn) {
           openNewTabBtn.addEventListener("click", () => {
             window.open(src, "_blank");
           });
+        }
+
+        // 1) ENSURE BAREMUX TRANSPORT BEFORE HITTING /scramjet/…
+        try {
+          const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
+          const wispUrl =
+            (location.protocol === "https:" ? "wss" : "ws") +
+            "://" +
+            location.host +
+            "/wisp/";
+
+          if ((await connection.getTransport()) !== "/epoxy/index.mjs") {
+            await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
+          }
+          console.log("BareMux transport ready in mediaplayer tab");
+        } catch (err) {
+          console.error("Failed to init BareMux transport (mediaplayer)", err);
+          if (loadingSub) {
+            loadingSub.textContent =
+              "Proxy transport failed to init. The page may still load, but some hosts will break.";
+          }
+        }
+
+        // 2) LOADING TIMEOUT HINTS
+        let longTimeout = setTimeout(() => {
+          if (loadingSub) {
+            loadingSub.textContent =
+              "This is taking longer than usual. The media host or proxy might be slow or timing out.";
+          }
+        }, 8000);
+
+        let hardTimeout = setTimeout(() => {
+          if (loadingEl) {
+            loadingEl.style.display = "none";
+          }
+          if (errorEl) {
+            errorEl.style.display = "flex";
+            errorEl.textContent =
+              "The media did not finish loading. It may be blocked, down, or the proxy hit a timeout.";
+          }
+        }, 25000); // 25s hard fail
+
+        // 3) SET IFRAME SRC + HANDLE LOAD
+        if (frame) {
+          frame.addEventListener("load", () => {
+            // If we got any kind of load event, kill the loading overlay.
+            if (loadingEl) loadingEl.style.display = "none";
+            clearTimeout(longTimeout);
+            clearTimeout(hardTimeout);
+          });
+
+          frame.src = src; // already /scramjet/https://... from media.html
         }
       })();
     </script>
