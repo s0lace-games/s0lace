@@ -1,267 +1,163 @@
 <!doctype html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
-    <title>S0LACE • Media</title>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>S0LACE • Media</title>
 
-    <link rel="shortcut icon" href="favicon.ico" />
-    <link rel="stylesheet" href="index.css" />
-    <script src="global-hub.js" defer></script>
-  </head>
+  <link rel="stylesheet" href="index.css" />
+</head>
 
-  <body>
-    <header class="site-header">
-      <div class="site-title">S0LACE</div>
-      <nav class="site-nav">
-        <a href="index.html">Home</a>
-        <a href="games.html">Games</a>
-        <a href="media.html" class="active">Media</a>
-        <a href="apps.html">Apps</a>
-        <a href="settings.html">Settings</a>
-      </nav>
-    </header>
+<body>
+  <header class="site-header">
+    <div class="site-title">S0LACE</div>
+    <nav class="site-nav">
+      <a href="index.html">Home</a>
+      <a href="games.html">Games</a>
+      <a href="media.html" class="active">Media</a>
+      <a href="apps.html">Apps</a>
+      <a href="settings.html">Settings</a>
+    </nav>
+  </header>
 
-    <main>
-      <div class="page-header">
-        <h1>Media</h1>
-        <div class="sub">
-          <span>Auto-updating</span> list of movies & shows powered by TMDB.
-        </div>
+  <main>
+    <div class="page-header">
+      <h1>Media</h1>
+      <div class="sub">
+        Search the entire TMDB movie database and stream instantly on VidFast.
       </div>
+    </div>
 
-      <!-- FILTER -->
-      <div class="games-search-wrap">
-        <span class="search-label">FILTER &gt;</span>
-        <input id="media-search" type="text"
-               placeholder="filter movies & shows..."
-               autocomplete="off" />
-      </div>
+    <!-- SEARCH TMDB -->
+    <div class="games-search-wrap">
+      <span class="search-label">SEARCH TMDB &gt;</span>
+      <input id="tmdb-search" type="text" placeholder="Search 1M+ movies..." autocomplete="off"/>
+    </div>
 
-      <!-- SORT DROPDOWN -->
-      <div style="margin:6px 0 14px; font-size:9px;">
-        <label for="sort-select">SORT &gt;</label>
-        <select id="sort-select" style="font-size:9px;">
-          <option value="az">A → Z</option>
-          <option value="za">Z → A</option>
-          <option value="popularity">Popularity</option>
-          <option value="released">Release Date</option>
-        </select>
-      </div>
+    <!-- STATUS -->
+    <div id="tmdb-status" style="font-size:9px; color:#7f7f7f;">
+      Loading trending movies…
+    </div>
 
-      <!-- TMDB STATUS -->
-      <div id="tmdb-status"
-           style="font-size:9px; color:#7f7f7f; margin:4px 0 10px;">
-        Loading popular titles…
-      </div>
+    <!-- GRID -->
+    <div class="media-grid" id="media-grid"></div>
 
-      <div class="media-grid" id="media-grid">
-        <!-- Example static card -->
-        <a class="media-card"
-           href="#"
-           data-title="Interstellar"
-           data-tmdb-id="157336">
-          <div class="poster-thumb">
-            <img src="thumbs/interstellar-poster.jpg" alt="Interstellar" />
-            <div class="media-overlay">Interstellar</div>
-          </div>
-        </a>
-      </div>
+    <div id="media-empty">No movies found.</div>
+  </main>
 
-      <div id="media-empty">No media matches that search.</div>
-    </main>
+  <script>
+    const TMDB_KEY = "2d1351cf74f73892042699d0431b799a"; // your key
+    const IMG_BASE = "https://image.tmdb.org/t/p/w342";
 
-    <script>
-      /* ============================================================
-         CONFIG
-      ============================================================ */
-      const TMDB_KEY = "2d1351cf74f73892042699d0431b799a"; // your v3 key
-      const TMDB_IMG_BASE = "https://image.tmdb.org/t/p/w342";
+    const grid = document.getElementById("media-grid");
+    const empty = document.getElementById("media-empty");
+    const statusBox = document.getElementById("tmdb-status");
+    const searchInput = document.getElementById("tmdb-search");
 
-      // OPTION B → Proxy posters through Scramjet ALWAYS
-      function proxiedImg(path) {
-        return "/scramjet/" + TMDB_IMG_BASE + path;
-      }
+    let currentResults = [];
 
-      const mediaGrid = document.getElementById("media-grid");
-      const mediaSearch = document.getElementById("media-search");
-      const mediaEmpty = document.getElementById("media-empty");
-      const tmdbStatus = document.getElementById("tmdb-status");
-      const sortSelect = document.getElementById("sort-select");
+    // ---------------------------------------------------------
+    // CREATE MOVIE CARD
+    // ---------------------------------------------------------
+    function createMovieCard(movie) {
+      const id = movie.id;
+      const title = movie.title || "Untitled";
+      const poster = movie.poster_path ? IMG_BASE + movie.poster_path : "thumbs/placeholder.png";
 
-      let mediaCards = [];
+      const card = document.createElement("a");
+      card.className = "media-card";
+      card.href = "#";
+      card.dataset.title = title;
 
-      /* ============================================================
-         CREATE CARD FROM TMDB
-      ============================================================ */
-      function createCardFromTMDB(movie) {
-        const id = movie.id;
-        const title = movie.title || movie.name || "Untitled";
-        const posterPath = movie.poster_path || movie.backdrop_path;
+      const thumb = document.createElement("div");
+      thumb.className = "poster-thumb";
 
-        const a = document.createElement("a");
-        a.className = "media-card tmdb-card";
-        a.href = "#";
-        a.dataset.title = title;
-        a.dataset.tmdbId = String(id);
-        a.dataset.popularity = movie.popularity || 0;
-        a.dataset.released = movie.release_date || movie.first_air_date || "0";
+      const img = document.createElement("img");
+      img.src = poster;
+      img.alt = title;
 
-        const thumb = document.createElement("div");
-        thumb.className = "poster-thumb";
+      const overlay = document.createElement("div");
+      overlay.className = "media-overlay";
+      overlay.textContent = title;
 
-        const img = document.createElement("img");
-        img.src = posterPath ? proxiedImg(posterPath) : "thumbs/placeholder-poster.png";
-        img.alt = title;
+      thumb.appendChild(img);
+      thumb.appendChild(overlay);
+      card.appendChild(thumb);
 
-        const overlay = document.createElement("div");
-        overlay.className = "media-overlay";
-        overlay.textContent = title;
-
-        thumb.appendChild(img);
-        thumb.appendChild(overlay);
-        a.appendChild(thumb);
-
-        a.addEventListener("click", (e) => {
-          e.preventDefault();
-          goToPlayer(title, "/scramjet/https://cinemaos.live/player/" + id);
-        });
-
-        return a;
-      }
-
-      /* ============================================================
-         NAVIGATE TO PLAYER
-      ============================================================ */
-      function goToPlayer(title, src) {
+      // click → vidfast player
+      card.addEventListener("click", (e) => {
+        e.preventDefault();
         const url = "mediaplayer.html?src=" +
-          encodeURIComponent(src) +
-          "&title=" +
-          encodeURIComponent(title);
-
+          encodeURIComponent("https://vidfast.pro/embed/movie/" + id) +
+          "&title=" + encodeURIComponent(title);
         window.location.href = url;
-      }
-
-      /* ============================================================
-         STATIC CARD CLICK WIRING
-      ============================================================ */
-      function wireStaticCards() {
-        mediaCards = Array.from(document.querySelectorAll(".media-card"));
-
-        mediaCards.forEach((card) => {
-          card.addEventListener("click", (e) => {
-            e.preventDefault();
-
-            const title = card.dataset.title;
-            const id = card.dataset.tmdbId;
-            const direct = card.dataset.src;
-
-            const src = direct || "/scramjet/https://cinemaos.live/player/" + id;
-
-            goToPlayer(title, src);
-          });
-        });
-      }
-
-      /* ============================================================
-         FILTER
-      ============================================================ */
-      function filterMedia() {
-        const q = (mediaSearch.value || "").toLowerCase().trim();
-        let visible = 0;
-
-        mediaCards.forEach((card) => {
-          const title = card.dataset.title.toLowerCase();
-          const match = !q || title.includes(q);
-
-          card.style.display = match ? "" : "none";
-          if (match) visible++;
-        });
-
-        mediaEmpty.style.display = visible === 0 ? "block" : "none";
-      }
-
-      /* ============================================================
-         SORTING
-      ============================================================ */
-      function sortMedia() {
-        const mode = sortSelect.value;
-
-        let sorted = [...mediaCards].filter((c) =>
-          c.closest("body") !== null
-        );
-
-        sorted.sort((a, b) => {
-          const ta = a.dataset.title.toLowerCase();
-          const tb = b.dataset.title.toLowerCase();
-
-          if (mode === "az") return ta.localeCompare(tb);
-          if (mode === "za") return tb.localeCompare(ta);
-          if (mode === "popularity")
-            return (parseFloat(b.dataset.popularity) || 0) -
-                   (parseFloat(a.dataset.popularity) || 0);
-          if (mode === "released")
-            return new Date(b.dataset.released) - new Date(a.dataset.released);
-
-          return 0;
-        });
-
-        sorted.forEach((el) => mediaGrid.appendChild(el));
-      }
-
-      /* ============================================================
-         LOAD TRENDING
-      ============================================================ */
-      async function loadTrending() {
-        if (!TMDB_KEY) {
-          tmdbStatus.textContent = "TMDB key missing.";
-          return;
-        }
-
-        try {
-          tmdbStatus.textContent = "Fetching…";
-
-          const res = await fetch(
-            "https://api.themoviedb.org/3/trending/movie/day?api_key=" + TMDB_KEY
-          );
-          const data = await res.json();
-
-          const frag = document.createDocumentFragment();
-
-          (data.results || []).slice(0, 30).forEach((movie) => {
-            const card = createCardFromTMDB(movie);
-            frag.appendChild(card);
-          });
-
-          mediaGrid.prepend(frag);
-          mediaCards = Array.from(document.querySelectorAll(".media-card"));
-
-          tmdbStatus.textContent = "Loaded popular movies.";
-        } catch (err) {
-          tmdbStatus.textContent = "TMDB failed: " + err.message;
-        }
-      }
-
-      /* ============================================================
-         INIT
-      ============================================================ */
-      document.addEventListener("DOMContentLoaded", async () => {
-        wireStaticCards();
-        await loadTrending();
-        sortMedia();
-
-        mediaSearch.addEventListener("input", () => {
-          filterMedia();
-        });
-
-        sortSelect.addEventListener("change", () => {
-          sortMedia();
-          filterMedia();
-        });
-
-        filterMedia();
       });
-    </script>
-  </body>
+
+      return card;
+    }
+
+    // ---------------------------------------------------------
+    // LOAD TRENDING MOVIES
+    // ---------------------------------------------------------
+    async function loadTrending() {
+      statusBox.textContent = "Loading trending movies…";
+
+      const url = `https://api.themoviedb.org/3/trending/movie/day?api_key=${TMDB_KEY}`;
+
+      const res = await fetch(url);
+      const data = await res.json();
+
+      grid.innerHTML = "";
+      currentResults = data.results || [];
+
+      currentResults.forEach(movie => {
+        grid.appendChild(createMovieCard(movie));
+      });
+
+      statusBox.textContent = "Trending movies from TMDB";
+      empty.style.display = currentResults.length === 0 ? "block" : "none";
+    }
+
+    // ---------------------------------------------------------
+    // GLOBAL TMDB SEARCH
+    // ---------------------------------------------------------
+    async function searchTMDB(query) {
+      if (!query.trim()) {
+        loadTrending();
+        return;
+      }
+
+      statusBox.textContent = "Searching TMDB…";
+
+      const url =
+        `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}` +
+        `&query=${encodeURIComponent(query)}`;
+
+      const res = await fetch(url);
+      const data = await res.json();
+
+      grid.innerHTML = "";
+      currentResults = data.results || [];
+
+      currentResults.forEach(movie => {
+        grid.appendChild(createMovieCard(movie));
+      });
+
+      statusBox.textContent = "Search results from TMDB";
+      empty.style.display = currentResults.length === 0 ? "block" : "none";
+    }
+
+    // ---------------------------------------------------------
+    // INIT
+    // ---------------------------------------------------------
+    document.addEventListener("DOMContentLoaded", () => {
+      loadTrending();
+
+      searchInput.addEventListener("input", (e) => {
+        searchTMDB(e.target.value);
+      });
+    });
+  </script>
+
+</body>
 </html>
