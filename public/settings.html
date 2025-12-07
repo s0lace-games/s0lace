@@ -29,12 +29,15 @@
     <main>
       <div class="page-header">
         <h1>Settings</h1>
+        <div class="sub">
+          Customize tab cloaking, accent, theme and background. All stored
+          locally on this device.
+        </div>
       </div>
 
       <!-- TAB CLOAKING -->
       <section class="home-panel" style="margin-bottom: 16px;">
         <div class="motd-label">TAB CLOAKING</div>
-
 
         <!-- Presets -->
         <div style="margin-top: 10px; font-size: 8px;">
@@ -77,7 +80,7 @@
               <input
                 id="cloak-title"
                 type="text"
-                placeholder="e.g. Google Drive"
+                placeholder="e.g. My Drive - Google Drive"
                 style="
                   width: 100%;
                   margin-top: 3px;
@@ -126,7 +129,7 @@
       </section>
 
       <!-- ACCENT / THEME -->
-      <section class="home-panel">
+      <section class="home-panel" style="margin-bottom: 16px;">
         <div class="motd-label">ACCENT COLOR</div>
 
         <div style="margin-top: 10px; font-size: 8px;">
@@ -138,7 +141,7 @@
               class="accent-radio"
               checked
             />
-             green (default)
+            green (default)
           </label>
 
           <label style="display: flex; align-items: center; gap: 6px;">
@@ -148,7 +151,7 @@
               value="violet"
               class="accent-radio"
             />
-           violet
+            violet
           </label>
 
           <label style="display: flex; align-items: center; gap: 6px;">
@@ -158,8 +161,131 @@
               value="amber"
               class="accent-radio"
             />
-             amber
+            amber
           </label>
+
+          <label style="display: flex; align-items: center; gap: 6px;">
+            <input
+              type="radio"
+              name="accent"
+              value="white"
+              class="accent-radio"
+            />
+            white
+          </label>
+        </div>
+      </section>
+
+      <!-- THEME -->
+      <section class="home-panel" style="margin-bottom: 16px;">
+        <div class="motd-label">THEME</div>
+        <div style="margin-top: 10px; font-size: 8px;">
+          <label style="display: flex; align-items: center; gap: 6px;">
+            <input
+              type="radio"
+              name="theme"
+              value="dark"
+              class="theme-radio"
+              checked
+            />
+            dark
+          </label>
+          <label style="display: flex; align-items: center; gap: 6px;">
+            <input
+              type="radio"
+              name="theme"
+              value="light"
+              class="theme-radio"
+            />
+            light
+          </label>
+          <label style="display: flex; align-items: center; gap: 6px;">
+            <input
+              type="radio"
+              name="theme"
+              value="baby"
+              class="theme-radio"
+            />
+            baby-blue
+          </label>
+          <label style="display: flex; align-items: center; gap: 6px;">
+            <input
+              type="radio"
+              name="theme"
+              value="xmas"
+              class="theme-radio"
+            />
+            christmas
+          </label>
+        </div>
+      </section>
+
+      <!-- BACKGROUND -->
+      <section class="home-panel" style="margin-bottom: 16px;">
+        <div class="motd-label">BACKGROUND</div>
+        <div style="margin-top: 10px; font-size: 8px;">
+          <div style="margin-bottom: 6px;">
+            MODE &gt;
+          </div>
+          <select
+            id="bg-mode"
+            style="
+              font-family: 'Press Start 2P', system-ui, sans-serif;
+              font-size: 8px;
+              padding: 6px 8px;
+              border-radius: 0;
+              border: 2px solid #262626;
+              background: #000;
+              color: #f5f5f5;
+              width: 100%;
+            "
+          >
+            <option value="default">DEFAULT (CRT GRID)</option>
+            <option value="gif-stars">STARRY GIF</option>
+            <option value="custom">CUSTOM IMAGE URL</option>
+          </select>
+
+          <div
+            id="bg-url-row"
+            style="margin-top: 8px; display: none; flex-direction: column; gap: 4px;"
+          >
+            <label>
+              Image URL<br />
+              <input
+                id="bg-url"
+                type="text"
+                placeholder="https://example.com/your-bg.gif"
+                style="
+                  width: 100%;
+                  margin-top: 3px;
+                  padding: 6px 8px;
+                  border-radius: 0;
+                  border: 2px solid #262626;
+                  background: #000;
+                  color: #f5f5f5;
+                  font-size: 8px;
+                  font-family: 'Press Start 2P', system-ui, sans-serif;
+                "
+              />
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- STORAGE / RESET -->
+      <section class="home-panel">
+        <div class="motd-label">STORAGE</div>
+        <div style="margin-top: 8px; font-size: 8px; color: #7f7f7f;">
+          Settings are stored in <span style="color: var(--accent);">localStorage</span>
+          on this device only.
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
+          <button type="button" class="proxy-btn" id="btn-reset-settings">
+            Reset S0LACE settings
+          </button>
+          <button type="button" class="proxy-btn" id="btn-clear-media">
+            Clear media cache
+          </button>
         </div>
       </section>
     </main>
@@ -173,7 +299,18 @@
       const statusEl = document.getElementById("cloak-status");
       const accentRadios = document.querySelectorAll(".accent-radio");
 
+      const themeRadios = document.querySelectorAll(".theme-radio");
+      const bgModeSelect = document.getElementById("bg-mode");
+      const bgUrlRow = document.getElementById("bg-url-row");
+      const bgUrlInput = document.getElementById("bg-url");
+      const btnResetSettings = document.getElementById("btn-reset-settings");
+      const btnClearMedia = document.getElementById("btn-clear-media");
+
       const CLOAK_KEY = "s0laceTabCloak";
+      const THEME_KEY = "s0laceTheme";
+      const BG_MODE_KEY = "s0laceBgMode";
+      const BG_URL_KEY = "s0laceBgUrl";
+      const MEDIA_CACHE_KEY = "s0laceMediaCache";
 
       const PRESETS = {
         drive: {
@@ -183,8 +320,7 @@
         },
         original: {
           title: "S0LACE",
-          iconHref:
-            "favicon.ico",
+          iconHref: "favicon.ico",
         },
         docs: {
           title: "Document - Google Docs",
@@ -225,6 +361,18 @@
         statusEl.textContent = msg || "";
       }
 
+      function syncAccentRadios(current) {
+        accentRadios.forEach((r) => {
+          r.checked = r.value === current;
+        });
+      }
+
+      function syncThemeRadios(current) {
+        themeRadios.forEach((r) => {
+          r.checked = r.value === current;
+        });
+      }
+
       // ---- preset buttons ----
       presetButtons.forEach((btn) => {
         btn.addEventListener("click", () => {
@@ -248,7 +396,7 @@
         });
       });
 
-      // ---- custom ----
+      // ---- custom cloak ----
       applyCustomBtn.addEventListener("click", () => {
         if (!window.S0LACE) return;
         const title = titleInput.value.trim();
@@ -282,12 +430,6 @@
       });
 
       // ---- accent radios ----
-      function syncAccentRadios(current) {
-        accentRadios.forEach((r) => {
-          r.checked = r.value === current;
-        });
-      }
-
       accentRadios.forEach((radio) => {
         radio.addEventListener("change", () => {
           if (!radio.checked || !window.S0LACE) return;
@@ -295,7 +437,72 @@
         });
       });
 
-      // ---- initial load ----
+      // ---- theme radios ----
+      themeRadios.forEach((radio) => {
+        radio.addEventListener("change", () => {
+          if (!radio.checked || !window.S0LACE) return;
+          window.S0LACE.applyTheme(radio.value, true);
+        });
+      });
+
+      // ---- background controls ----
+      bgModeSelect.addEventListener("change", () => {
+        if (!window.S0LACE) return;
+        const mode = bgModeSelect.value;
+        if (mode === "custom") {
+          bgUrlRow.style.display = "flex";
+        } else {
+          bgUrlRow.style.display = "none";
+        }
+        const url = mode === "custom" ? bgUrlInput.value.trim() : "";
+        window.S0LACE.applyBackground(mode, url, true);
+      });
+
+      bgUrlInput.addEventListener("blur", () => {
+        if (!window.S0LACE) return;
+        if (bgModeSelect.value !== "custom") return;
+        const url = bgUrlInput.value.trim();
+        window.S0LACE.applyBackground("custom", url, true);
+      });
+
+      // ---- reset everything for this device ----
+      btnResetSettings.addEventListener("click", () => {
+        if (
+          !confirm(
+            "Reset S0LACE settings on THIS device? Themes, background, accent, cloaking etc will revert."
+          )
+        ) {
+          return;
+        }
+
+        const keysToKill = [
+          CLOAK_KEY,
+          "s0laceAccent",
+          THEME_KEY,
+          BG_MODE_KEY,
+          BG_URL_KEY,
+          "solace-tab-title",
+          "solace-tab-favicon",
+          MEDIA_CACHE_KEY,
+        ];
+
+        keysToKill.forEach((k) => {
+          try {
+            localStorage.removeItem(k);
+          } catch (_) {}
+        });
+
+        location.reload();
+      });
+
+      btnClearMedia.addEventListener("click", () => {
+        try {
+          localStorage.removeItem(MEDIA_CACHE_KEY);
+        } catch (_) {}
+        alert("Media cache cleared (if any was stored).");
+      });
+
+      // ---- initial load from global-hub ----
       window.addEventListener("s0lace:settingsLoaded", (evt) => {
         const accent = evt.detail?.accent || "green";
         syncAccentRadios(accent);
@@ -307,6 +514,19 @@
           updateStatus("Cloak is currently active.");
         } else {
           updateStatus("No cloak active.");
+        }
+
+        const theme = evt.detail?.theme || "dark";
+        syncThemeRadios(theme);
+
+        const bgMode = evt.detail?.bgMode || "default";
+        const bgUrl = evt.detail?.bgUrl || "";
+        bgModeSelect.value = bgMode;
+        if (bgMode === "custom") {
+          bgUrlRow.style.display = "flex";
+          bgUrlInput.value = bgUrl;
+        } else {
+          bgUrlRow.style.display = "none";
         }
       });
     </script>
