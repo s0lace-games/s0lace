@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
+      content="width=device-width, initial-scale=1.0, shrink-to-fit-no"
     />
     <title>S0LACE • TV Player</title>
 
@@ -31,11 +31,11 @@
         flex: 1;
         max-width: 1200px;
         margin: 0 auto;
-        padding: 12px 10px 16px;
+        padding: 12px 10px 18px;
         display: grid;
-        grid-template-columns: minmax(0, 3fr) minmax(260px, 1fr);
-        gap: 16px;
-        align-items: stretch;
+        grid-template-columns: minmax(0, 3.5fr) minmax(260px, 1.4fr);
+        gap: 40px; /* more separation like your sketch */
+        align-items: flex-start;
       }
 
       .tv-left {
@@ -53,6 +53,7 @@
         display: flex;
         flex-direction: column;
         gap: 8px;
+        min-height: 0;
       }
 
       .tv-sidebar-title {
@@ -104,6 +105,7 @@
         padding: 4px;
         overflow-y: auto;
         font-size: 8px;
+        min-height: 200px;
       }
 
       .tv-episode-btn {
@@ -170,13 +172,15 @@
         white-space: nowrap;
       }
 
+      /* BIG HORIZONTAL 16:10 FRAME */
       .player-frame-wrap {
         position: relative;
-        border-radius: 0;
+        width: 100%;
+        aspect-ratio: 16 / 10; /* 16:10 */
         border: 2px solid var(--border-hard, #262626);
         background: #020617;
         box-shadow: 0 18px 40px rgba(0, 0, 0, 0.9);
-        min-height: 320px;
+        overflow: hidden;
       }
 
       .player-loading {
@@ -204,9 +208,10 @@
       }
 
       #tv-frame {
+        position: absolute;
+        inset: 0;
         width: 100%;
         height: 100%;
-        min-height: 320px;
         border: none;
       }
 
@@ -246,9 +251,10 @@
       @media (max-width: 900px) {
         .tv-main-layout {
           grid-template-columns: minmax(0, 1fr);
+          gap: 20px;
         }
         .tv-right {
-          order: -1;
+          order: -1; /* sidebar on top on small screens */
         }
       }
     </style>
@@ -283,8 +289,6 @@
           <div class="player-frame-wrap">
             <div id="player-loading" class="player-loading">
               CONNECTING TO PROXY…
-              <span id="player-loading-sub">
-                First load can be slow while the proxy boots and the host responds.
               </span>
             </div>
 
@@ -310,8 +314,6 @@
         <!-- RIGHT: season + episodes panel -->
         <aside class="tv-right">
           <div class="tv-sidebar-title">Seasons & Episodes</div>
-          <div class="tv-sidebar-sub">
-            Auto-loaded from TMDB. Click any episode to jump.
           </div>
 
           <div class="tv-season-row">
@@ -369,7 +371,7 @@
           return;
         }
 
-        // ===== OPEN IN NEW TAB (DIRECT CINEMAOS URL) =====
+        // OPEN IN NEW TAB (direct CinemaOS link, not proxied)
         if (openNewTabBtn) {
           openNewTabBtn.addEventListener("click", () => {
             const direct = `https://cinemaos.tech/player/${tmdbId}/${currentSeason}/${currentEpisode}`;
@@ -377,7 +379,7 @@
           });
         }
 
-        // ===== INIT BAREMUX TRANSPORT FOR SCRAMJET =====
+        // INIT BAREMUX TRANSPORT FOR SCRAMJET
         try {
           const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
           const wispUrl =
@@ -397,7 +399,7 @@
           }
         }
 
-        // ===== HELPER: UPDATE FRAME SRC + LABEL =====
+        // UPDATE FRAME SRC + LABEL  — **USING /scramjet/**
         function updateFrame() {
           const src = `/scramjet/https://cinemaos.tech/player/${tmdbId}/${currentSeason}/${currentEpisode}`;
           if (frame) {
@@ -436,7 +438,7 @@
           });
         }
 
-        // ===== TMDB: LOAD SERIES + SEASONS =====
+        // TMDB: LOAD SERIES + SEASONS
         async function loadSeriesAndSeasons() {
           try {
             const res = await fetch(
@@ -471,7 +473,7 @@
           }
         }
 
-        // ===== TMDB: LOAD EPISODES FOR CURRENT SEASON =====
+        // TMDB: LOAD EPISODES FOR CURRENT SEASON
         async function loadEpisodesForSeason(seasonNum) {
           try {
             const res = await fetch(
@@ -505,7 +507,6 @@
               btn.addEventListener("click", () => {
                 currentSeason = seasonNum;
                 currentEpisode = ep.episode_number;
-                // update active state
                 document
                   .querySelectorAll(".tv-episode-btn")
                   .forEach((b) => b.classList.remove("active"));
@@ -516,10 +517,8 @@
               episodesBox.appendChild(btn);
             });
 
-            // if current episode doesn't exist in this season, jump to first
             if (!episodes.some((ep) => ep.episode_number === currentEpisode)) {
               currentEpisode = episodes[0]?.episode_number || 1;
-              // mark first as active
               const firstBtn = episodesBox.querySelector(".tv-episode-btn");
               if (firstBtn) firstBtn.classList.add("active");
             }
@@ -528,7 +527,7 @@
           }
         }
 
-        // ===== HOOKS =====
+        // HOOKS
         seasonSelect.addEventListener("change", async () => {
           const newSeason = parseInt(seasonSelect.value, 10) || 1;
           currentSeason = newSeason;
@@ -537,7 +536,7 @@
           updateFrame();
         });
 
-        // ===== INITIAL LOAD =====
+        // INITIAL LOAD
         await loadSeriesAndSeasons();
         await loadEpisodesForSeason(currentSeason);
         updateFrame();
