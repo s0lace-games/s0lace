@@ -11,71 +11,40 @@ import { baremuxPath } from "@mercuryworkshop/bare-mux/node";
 
 const publicPath = fileURLToPath(new URL("../public/", import.meta.url));
 
-/* ===========================
-      WISP CONFIGURATION
-   =========================== */
+// Wisp Configuration
 logging.set_level(logging.NONE);
 Object.assign(wisp.options, {
   allow_udp_streams: false,
-  hostname_blacklist: [],             // ← DO NOT block poster hosts
-  dns_servers: ["1.1.1.1", "1.0.0.1"],
+  hostname_blacklist: [/example\.com/],
+  dns_servers: ["1.1.1.3", "1.0.0.3"],
 });
 
 const fastify = Fastify({
   serverFactory: (handler) => {
     return createServer()
       .on("request", (req, res) => {
-        // REQUIRED for Scramjet proxying
         res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
         res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
         handler(req, res);
       })
       .on("upgrade", (req, socket, head) => {
-        if (req.url.endsWith("/wisp/")) {
-          wisp.routeRequest(req, socket, head);
-        } else {
-          socket.end();
-        }
+        if (req.url.endsWith("/wisp/")) wisp.routeRequest(req, socket, head);
+        else socket.end();
       });
   },
 });
 
-/* ===========================
-       STATIC PUBLIC FILES
-   =========================== */
 fastify.register(fastifyStatic, {
   root: publicPath,
   decorateReply: true,
 });
 
-/* ===================================
-   SCRAMJET RUNTIME + PROXY ROUTING
-   =================================== */
-
-/*
-  /scramjet/* → Remote URLs are proxied here
-  Example:
-    /scramjet/https://cinemaos.live/player/1234
-*/
-fastify.register(fastifyStatic, {
-  root: scramjetPath,
-  prefix: "/scramjet/",
-  decorateReply: false,
-});
-
-/*
-  /scram/* → WASM, sync.js, scramjet runtime files
-  These MUST be separate from the proxy prefix.
-*/
 fastify.register(fastifyStatic, {
   root: scramjetPath,
   prefix: "/scram/",
   decorateReply: false,
 });
 
-/* ===========================
-       TRANSPORT LAYERS
-   =========================== */
 fastify.register(fastifyStatic, {
   root: epoxyPath,
   prefix: "/epoxy/",
@@ -88,22 +57,30 @@ fastify.register(fastifyStatic, {
   decorateReply: false,
 });
 
-/* ===========================
-             404
-   =========================== */
-fastify.setNotFoundHandler((req, reply) => {
+fastify.setNotFoundHandler((res, reply) => {
   return reply.code(404).type("text/html").sendFile("404.html");
 });
 
-/* ===========================
-       START SERVER
-   =========================== */
 fastify.server.on("listening", () => {
   const address = fastify.server.address();
   console.log("Listening on:");
-  console.log(`  http://localhost:${address.port}`);
-  console.log(`  http://${hostname()}:${address.port}`);
+  console.log(`\thttp://localhost:${address.port}`);
+  console.log(`\thttp://${hostname()}:${address.port}`);
+  console.log(
+    `\thttp://${
+      address.family === "IPv6" ? `[${address.address}]` : address.address
+    }:${address.port}`,
+  );
 });
+
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);
+
+function shutdown() {
+  console.log("SIGTERM signal received: closing HTTP server");
+  fastify.close();
+  process.exit(0);
+}
 
 let port = parseInt(process.env.PORT || "");
 if (isNaN(port)) port = 8080;
