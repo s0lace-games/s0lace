@@ -16,11 +16,10 @@
     <script src="search.js" defer></script>
     <script src="index.js" defer></script>
 
-    <!-- global theme / settings -->
+    <!-- Global theme / accent / tab cloaking -->
     <script src="global-hub.js" defer></script>
 
     <style>
-      /* subheader style fix */
       .sub {
         text-align: center;
         font-size: 12px;
@@ -28,11 +27,13 @@
         color: var(--fg-dim);
         font-family: Spectral, serif;
         opacity: 0.8;
+        pointer-events: none;
       }
     </style>
   </head>
 
   <body>
+
     <header class="site-header">
       <div class="site-title">S0LACE</div>
       <nav class="site-nav">
@@ -44,8 +45,7 @@
     </header>
 
     <main class="home-main">
-
-      <!-- ========= CENTER TITLE + PROXY ========= -->
+      <!-- CENTER PANEL -->
       <section class="home-center">
         <div class="home-logo-title">
           <div class="home-logo-mark">S0LACE</div>
@@ -56,18 +56,20 @@
 
           <div style="margin-top: 14px;">
             <div class="proxy-label">PR0XY &gt;</div>
+
             <form id="sj-form">
               <input id="sj-search-engine" value="https://www.google.com/search?q=%s" type="hidden" />
               <input id="sj-address" type="text" placeholder="type a url or search..." />
               <button class="proxy-btn" type="submit">GO</button>
             </form>
+
             <div id="sj-error"></div>
             <pre id="sj-error-code"></pre>
           </div>
         </section>
       </section>
 
-      <!-- ========= POPULAR GAMES (PIZZA STYLE, SCROLLING) ========= -->
+      <!-- ========== NEW LANDSCAPE POPULAR STRIP ========== -->
       <section class="home-panel home-popular-panel">
         <div class="motd-label">POPULAR GAMES</div>
 
@@ -75,78 +77,70 @@
           <div class="popular-track">
 
             <!-- LOOP 1 -->
-            <a class="popular-pill" href="player.html?game=games/retrobowl/index.html">
-              <span class="pill-thumb" style="background-image:url('thumbs/retrobowl.png')"></span>
-              <span class="pill-name">Retro Bowl</span>
+            <a class="popular-card" href="player.html?game=games/polytrack/index.html">
+              <img class="popular-card-img" src="thumbs/polytrack.jpg" />
+              <div class="popular-card-title">PolyTrack</div>
             </a>
 
-            <a class="popular-pill" href="player.html?game=games/balatro/index.html">
-              <span class="pill-thumb" style="background-image:url('thumbs/balatro.jpeg')"></span>
-              <span class="pill-name">Balatro</span>
+            <a class="popular-card" href="player.html?game=games/golforbit/index.html">
+              <img class="popular-card-img" src="thumbs/golforbit.jpg" />
+              <div class="popular-card-title">Golf Orbit</div>
             </a>
 
-            <a class="popular-pill" href="player.html?game=games/geometrydash/index.html">
-              <span class="pill-thumb" style="background-image:url('thumbs/geometrydash.png')"></span>
-              <span class="pill-name">Geometry Dash</span>
+            <a class="popular-card" href="player.html?game=games/clusterrush/index.html">
+              <img class="popular-card-img" src="thumbs/clusterrush.jpg" />
+              <div class="popular-card-title">Cluster Rush</div>
             </a>
 
-            <a class="popular-pill" href="player.html?game=games/monkey-mart/index.html">
-              <span class="pill-thumb" style="background-image:url('thumbs/monkey-mart.jpeg')"></span>
-              <span class="pill-name">Monkey Mart</span>
+            <a class="popular-card" href="player.html?game=games/escapecity/index.html">
+              <img class="popular-card-img" src="thumbs/escapecity.jpg" />
+              <div class="popular-card-title">Escape Road City</div>
             </a>
 
-            <a class="popular-pill" href="player.html?game=games/level-devil/index.html">
-              <span class="pill-thumb" style="background-image:url('thumbs/leveldevil.jpeg')"></span>
-              <span class="pill-name">Level Devil</span>
+            <a class="popular-card" href="player.html?game=games/retrobowl/index.html">
+              <img class="popular-card-img" src="thumbs/retrobowl-wide.jpg" />
+              <div class="popular-card-title">Retro Bowl</div>
             </a>
 
-            <a class="popular-pill" href="player.html?game=games/snow-rider/index.html">
-              <span class="pill-thumb" style="background-image:url('thumbs/snow-rider.jpeg')"></span>
-              <span class="pill-name">Snow Rider 3D</span>
+            <!-- LOOP 2 (for infinite scroll) -->
+            <a class="popular-card" href="player.html?game=games/polytrack/index.html">
+              <img class="popular-card-img" src="thumbs/polytrack.jpg" />
+              <div class="popular-card-title">PolyTrack</div>
             </a>
 
-            <!-- LOOP 2 (duplicate for infinite scroll) -->
-            <a class="popular-pill" href="player.html?game=games/retrobowl/index.html">
-              <span class="pill-thumb" style="background-image:url('thumbs/retrobowl.png')"></span>
-              <span class="pill-name">Retro Bowl</span>
+            <a class="popular-card" href="player.html?game=games/golforbit/index.html">
+              <img class="popular-card-img" src="thumbs/golforbit.jpg" />
+              <div class="popular-card-title">Golf Orbit</div>
             </a>
 
-            <a class="popular-pill" href="player.html?game=games/harvestsimulator/index.html">
-              <span class="pill-thumb" style="background-image:url('thumbs/harvestsimulator.png')"></span>
-              <span class="pill-name">Harvest Simulator</span>
+            <a class="popular-card" href="player.html?game=games/clusterrush/index.html">
+              <img class="popular-card-img" src="thumbs/clusterrush.jpg" />
+              <div class="popular-card-title">Cluster Rush</div>
             </a>
 
-            <a class="popular-pill" href="player.html?game=games/gun-spin/index.html">
-              <span class="pill-thumb" style="background-image:url('thumbs/gun-spin.jpeg')"></span>
-              <span class="pill-name">Gun Spin</span>
+            <a class="popular-card" href="player.html?game=games/escapecity/index.html">
+              <img class="popular-card-img" src="thumbs/escapecity.jpg" />
+              <div class="popular-card-title">Escape Road City</div>
             </a>
 
-            <a class="popular-pill" href="player.html?game=games/monkey-mart/index.html">
-              <span class="pill-thumb" style="background-image:url('thumbs/monkey-mart.jpeg')"></span>
-              <span class="pill-name">Monkey Mart</span>
-            </a>
-
-            <a class="popular-pill" href="player.html?game=games/level-devil/index.html">
-              <span class="pill-thumb" style="background-image:url('thumbs/leveldevil.jpeg')"></span>
-              <span class="pill-name">Level Devil</span>
-            </a>
-
-            <a class="popular-pill" href="player.html?game=games/drift-boss/index.html">
-              <span class="pill-thumb" style="background-image:url('thumbs/drift-boss.jpeg')"></span>
-              <span class="pill-name">Drift Boss</span>
+            <a class="popular-card" href="player.html?game=games/retrobowl/index.html">
+              <img class="popular-card-img" src="thumbs/retrobowl-wide.jpg" />
+              <div class="popular-card-title">Retro Bowl</div>
             </a>
 
           </div>
         </div>
       </section>
+      <!-- END POPULAR STRIP -->
+
     </main>
 
-    <!-- MOTD Script -->
+    <!-- MOTD randomizer -->
     <script>
       const motdEl = document.getElementById("motd");
       const lines = [
         "do you like the new theme",
-        "media works now",
+        "media workks now",
         "made in school",
         "i hate adding games",
         "rip trinity",
@@ -162,7 +156,7 @@
         motdEl.textContent = lines[i];
       }
 
-      motdEl.addEventListener("click", setRandomMotd);
+      motdEl?.addEventListener("click", setRandomMotd);
       setRandomMotd();
     </script>
 
