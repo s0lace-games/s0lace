@@ -1,83 +1,192 @@
 <!doctype html>
 <html>
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>S0LACE • Account</title>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
+    />
+    <title>S0LACE • Account</title>
 
-  <link rel="stylesheet" href="index.css">
-  <script src="global-hub.js" defer></script>
-  <script type="module" src="account.js" defer></script>
-</head>
+    <link rel="shortcut icon" content="favicon.ico" />
+    <link rel="stylesheet" href="index.css" />
 
-<body>
-<header class="site-header">
-  <div class="site-title">S0LACE</div>
-  <nav class="site-nav">
-    <a href="index.html">Home</a>
-    <a href="games.html">Games</a>
-    <a href="media.html">Media</a>
-    <a href="settings.html">Settings</a>
-    <a href="account.html" class="account-link active">
-  <img id="account-icon" alt="Account" />
-</a>
+    <!-- Firebase -->
+    <script type="module" src="account.js" defer></script>
 
+    <!-- Global settings / tab cloak -->
+    <script src="global-hub.js" defer></script>
 
-  </nav>
-</header>
+    <style>
+      /* ============================================================
+         ACCOUNT PAGE FIXES — input boxes, fonts, alignment
+         ============================================================ */
 
-<main>
-  <div class="page-header"><h1>Account</h1></div>
+      .account-container {
+        max-width: 820px;
+        margin: 40px auto;
+        padding: 0 20px;
+      }
 
-  <!-- NOT LOGGED IN -->
-  <section id="auth-section">
-    <div class="home-panel account-panel">
+      .account-box {
+        padding: 18px;
+        border: 1px solid #262626;
+        background: rgba(0, 0, 0, 0.35);
+        margin-bottom: 26px;
+      }
+
+      .account-box .section-title {
+        font-size: 11px;
+        color: var(--accent);
+        font-family: "Press Start 2P", monospace;
+        margin-bottom: 10px;
+      }
+
+      .account-input {
+        width: 100%;
+        padding: 8px 10px;
+        font-size: 12px;
+        font-family: "Inter", sans-serif;
+        border: 2px solid var(--accent);
+        background: #0d0d0d;
+        color: #ffffff;
+        outline: none;
+        border-radius: 4px;
+        margin-bottom: 12px;
+      }
+
+      .account-input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 6px var(--accent);
+      }
+
+      .account-btn {
+        width: 100%;
+        padding: 10px;
+        margin-top: 6px;
+        font-family: "Press Start 2P", monospace;
+        font-size: 11px;
+        background: #002e1d;
+        color: var(--accent);
+        border: 2px solid var(--accent);
+        cursor: pointer;
+        transition: 0.2s ease;
+      }
+
+      .account-btn:hover {
+        background: #004f31;
+        transform: translateY(-1px);
+      }
+
+      /* logged-in state box */
+      #logged-in-box {
+        display: none;
+        padding: 20px;
+        background: rgba(0,0,0,0.35);
+        border: 1px solid #262626;
+        margin-bottom: 26px;
+      }
+
+      #logged-in-email {
+        font-family: "Inter", sans-serif;
+        font-size: 13px;
+        color: var(--fg);
+        margin-bottom: 14px;
+      }
+
+      .sync-btn {
+        padding: 10px;
+        width: 100%;
+        background: #001d12;
+        color: var(--accent);
+        border: 2px solid var(--accent);
+        font-family: "Press Start 2P";
+        font-size: 11px;
+        cursor: pointer;
+        margin-bottom: 10px;
+      }
+
+      .sync-btn:hover {
+        background: #00321f;
+      }
+
+    </style>
+  </head>
+
+  <body>
+    <header class="site-header">
+      <div class="site-title">S0LACE</div>
+
+      <nav class="site-nav">
+        <a href="index.html">Home</a>
+        <a href="games.html">Games</a>
+        <a href="media.html">Media</a>
+        <a href="account.html" class="active">
+          <img id="account-icon" src="icons/acc-green.png" class="nav-account-icon">
+        </a>
+      </nav>
+    </header>
+
+    <main class="account-container">
+
+      <!-- LOGGED IN UI -->
+      <div id="logged-in-box">
+        <div id="logged-in-email">Logged in as: loading...</div>
+
+        <button id="save-cloud" class="sync-btn">Save Settings to Cloud</button>
+        <button id="load-cloud" class="sync-btn">Sync Settings from Cloud</button>
+        <button id="logout-btn" class="sync-btn" style="border-color:#ff3d3d; color:#ff3d3d;">
+          Log Out
+        </button>
+      </div>
 
       <!-- LOGIN -->
-      <div class="account-block">
-        <div class="motd-label">LOG IN</div>
+      <div class="account-box" id="login-box">
+        <div class="section-title">LOG IN</div>
 
-        <form id="login-form">
-          <input autocomplete="email" type="email" id="login-email" placeholder="Email" required>
-          <input autocomplete="current-password" type="password" id="login-pass" placeholder="Password" required>
+        <label>Email</label>
+        <input
+          type="email"
+          id="login-email"
+          class="account-input"
+          autocomplete="email"
+        />
 
-          <button class="proxy-btn account-btn" type="submit">Log In</button>
-        </form>
+        <label>Password</label>
+        <input
+          type="password"
+          id="login-pass"
+          class="account-input"
+          autocomplete="current-password"
+        />
 
-        <div id="login-error" class="auth-error"></div>
+        <button class="account-btn" id="login-btn">Log In</button>
       </div>
 
       <!-- SIGNUP -->
-      <div class="account-block">
-        <div class="motd-label">CREATE ACCOUNT</div>
+      <div class="account-box" id="signup-box">
+        <div class="section-title">CREATE ACCOUNT</div>
 
-        <form id="signup-form">
-          <input autocomplete="email" type="email" id="signup-email" placeholder="Email" required>
-          <input autocomplete="new-password" type="password" id="signup-pass" placeholder="Password" required>
+        <label>Email</label>
+        <input
+          type="email"
+          id="signup-email"
+          class="account-input"
+          autocomplete="email"
+        />
 
-          <button class="proxy-btn account-btn" type="submit">Create Account</button>
-        </form>
+        <label>Password</label>
+        <input
+          type="password"
+          id="signup-pass"
+          class="account-input"
+          autocomplete="new-password"
+        />
 
-        <div id="signup-error" class="auth-error"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- LOGGED IN SECTION -->
-  <section id="loggedin-section" style="display:none;">
-    <div class="home-panel">
-      <div class="motd-label">ACCOUNT</div>
-      <div id="user-email" class="account-email"></div>
-
-      <div class="account-actions">
-        <button class="proxy-btn" id="save-settings">Save Settings</button>
-        <button class="proxy-btn" id="sync-settings">Sync Settings</button>
-        <button class="proxy-btn danger" id="logout-btn">Log Out</button>
+        <button class="account-btn" id="signup-btn">Create Account</button>
       </div>
 
-      <div id="sync-status" class="auth-error"></div>
-    </div>
-  </section>
-</main>
-</body>
+    </main>
+
+  </body>
 </html>
