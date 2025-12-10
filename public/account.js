@@ -1,47 +1,77 @@
+// account.js
 import { auth } from "./firebase-init.js";
 import {
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword
+  createUserWithEmailAndPassword,
+  onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-/* -------- LOGIN -------- */
+//
+// DOM
+//
+const loginEmail = document.getElementById("login-email");
+const loginPass = document.getElementById("login-pass");
+const signupEmail = document.getElementById("signup-email");
+const signupPass = document.getElementById("signup-pass");
 
-document.getElementById("login-form").addEventListener("submit", async (e) => {
-  e.preventDefault();
+const loginBtn = document.getElementById("login-btn");
+const signupBtn = document.getElementById("signup-btn");
 
-  const email = document.getElementById("login-email").value.trim();
-  const pass  = document.getElementById("login-pass").value.trim();
-  const errEl = document.getElementById("login-error");
+const statusBox = document.getElementById("account-status");
 
-  errEl.textContent = "";
+//
+// LOGIN
+//
+loginBtn.addEventListener("click", async () => {
+  let email = loginEmail.value.trim();
+  let pass = loginPass.value.trim();
+
+  if (!email || !pass) {
+    statusBox.textContent = "Missing fields.";
+    return;
+  }
 
   try {
     await signInWithEmailAndPassword(auth, email, pass);
-
-    errEl.style.color = "var(--accent)";
-    errEl.textContent = "Logged in!";
+    statusBox.textContent = "Logged in!";
   } catch (err) {
-    errEl.textContent = err.message;
+    statusBox.textContent = err.message;
   }
 });
 
-/* -------- SIGN UP -------- */
+//
+// SIGNUP
+//
+signupBtn.addEventListener("click", async () => {
+  let email = signupEmail.value.trim();
+  let pass = signupPass.value.trim();
 
-document.getElementById("signup-form").addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  const email = document.getElementById("signup-email").value.trim();
-  const pass  = document.getElementById("signup-pass").value.trim();
-  const errEl = document.getElementById("signup-error");
-
-  errEl.textContent = "";
+  if (!email || !pass) {
+    statusBox.textContent = "Missing fields.";
+    return;
+  }
 
   try {
     await createUserWithEmailAndPassword(auth, email, pass);
-
-    errEl.style.color = "var(--accent)";
-    errEl.textContent = "Account created!";
+    statusBox.textContent = "Account created!";
   } catch (err) {
-    errEl.textContent = err.message;
+    statusBox.textContent = err.message;
+  }
+});
+
+//
+// AUTO LOGIN SYNC
+//
+onAuthStateChanged(auth, user => {
+  if (user) {
+    statusBox.textContent = "Logged in as " + user.email;
+    localStorage.setItem("s0laceUser", user.uid);
+
+    // redirect back to homepage automatically
+    setTimeout(() => {
+      window.location.href = "index.html";
+    }, 800);
+  } else {
+    localStorage.removeItem("s0laceUser");
   }
 });
