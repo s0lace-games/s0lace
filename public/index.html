@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
     <title>S0LACE</title>
 
-    <link rel="shortcut icon" content="favicon.ico" />
+    <link rel="shortcut icon" href="favicon.ico" />
     <link rel="stylesheet" href="index.css" />
 
     <!-- Scramjet stack -->
@@ -20,6 +20,7 @@
     <script src="global-hub.js" defer></script>
 
     <style>
+      /* subheader style fix */
       .sub {
         text-align: center;
         font-size: 12px;
@@ -28,60 +29,58 @@
         font-family: Spectral, serif;
         opacity: 0.8;
       }
-    </style>
 
-    <!-- FIREBASE GLOBAL VISITOR COUNTER -->
-    <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-      import { getFirestore, doc, getDoc, updateDoc, increment, setDoc } 
-        from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-
-      const firebaseConfig = {
-        apiKey: "AIzaSyDZ9RpsmhIb6wMXCmysScNqfGY4K0Y3GvQ",
-        authDomain: "s0lace.firebaseapp.com",
-        projectId: "s0lace",
-        storageBucket: "s0lace.firebasestorage.app",
-        messagingSenderId: "987787551956",
-        appId: "1:987787551956:web:ffc45e1cc11b0bee34c741",
-        measurementId: "G-W79F0ZGEPN"
-      };
-
-      const app = initializeApp(firebaseConfig);
-      const db = getFirestore(app);
-
-      async function updateVisitorCount() {
-        const ref = doc(db, "stats", "visitorCount");
-
-        const snap = await getDoc(ref);
-
-        if (!snap.exists()) {
-          await setDoc(ref, { total: 1 });
-          document.getElementById("visit-num").textContent = "1";
-          return;
-        }
-
-        await updateDoc(ref, { total: increment(1) });
-
-        const newSnap = await getDoc(ref);
-        document.getElementById("visit-num").textContent = newSnap.data().total;
+      /* bottom-left discord + trello icons */
+      #bottom-icons {
+        position: fixed;
+        bottom: 16px;
+        left: 16px;
+        display: flex;
+        gap: 12px;
+        z-index: 999;
+      }
+      #bottom-icons img {
+        width: 32px;
+        height: 32px;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: 0.2s;
+        filter: brightness(0.8);
+      }
+      #bottom-icons img:hover {
+        opacity: 1;
+        filter: brightness(1.3) drop-shadow(0 0 6px var(--accent));
       }
 
-      document.addEventListener("DOMContentLoaded", updateVisitorCount);
-    </script>
+      /* Visitor panel (same style as home-panel) */
+      #visitor-panel .visitor-stats {
+        display: flex;
+        justify-content: space-around;
+        padding: 20px 0;
+      }
+      .visitor-box {
+        text-align: center;
+        font-family: "Press Start 2P";
+      }
+      .visitor-label {
+        font-size: 9px;
+        color: var(--fg-dim);
+        margin-bottom: 6px;
+      }
+      .visitor-number {
+        font-size: 16px;
+        color: var(--accent);
+        text-shadow: 0 0 6px var(--accent);
+      }
+    </style>
   </head>
 
   <body>
 
-    <!-- ===== FAST ACCESS PANEL (VISITOR COUNTER + LINKS) ===== -->
-    <div class="quick-panel">
-      <div class="visitor-count">
-        VISITORS: <span id="visit-num">--</span>
-      </div>
-
-      <div class="quick-links">
-        <a href="https://discord.gg/XXXXXXX" target="_blank" class="quick-btn">DISCORD</a>
-        <a href="https://trello.com/b/XXXXXXX" target="_blank" class="quick-btn">TRELLO</a>
-      </div>
+    <!-- bottom-left icons -->
+    <div id="bottom-icons">
+      <img src="icons/discord.png" onclick="window.open('https://discord.gg/...','_blank')" />
+      <img src="icons/trello.png" onclick="window.open('https://trello.com/...','_blank')" />
     </div>
 
     <header class="site-header">
@@ -99,7 +98,7 @@
 
     <main class="home-main">
 
-      <!-- ========= CENTER TITLE + PROXY ========= -->
+      <!-- ========= MAIN TITLE + PROXY ========= -->
       <section class="home-center">
         <div class="home-logo-title">
           <div class="home-logo-mark">S0LACE</div>
@@ -109,7 +108,7 @@
           <div id="motd">loading</div>
 
           <div style="margin-top: 14px;">
-            <div class="proxy-label">PR0XY ></div>
+            <div class="proxy-label">PR0XY &gt;</div>
             <form id="sj-form">
               <input id="sj-search-engine" value="https://www.google.com/search?q=%s" type="hidden" />
               <input id="sj-address" type="text" placeholder="type a url or search..." />
@@ -121,21 +120,101 @@
         </section>
       </section>
 
-      <!-- ========= POPULAR GAMES (PIZZA STYLE) ========= -->
+      <!-- ========= POPULAR GAMES (UNCHANGED) ========= -->
       <section class="home-panel home-popular-panel">
         <div class="motd-label">POPULAR GAMES</div>
 
         <div class="popular-wrap">
           <div class="popular-track">
-            <!-- your game pills unchanged -->
-            <!-- all the pills are exactly as you pasted -->
-            <!-- I did NOT touch this section -->
-            <!-- everything remains identical -->
-            <!-- (truncated here for length, but untouched in final merge) -->
-            <!-- ... keep your game list exactly the same ... -->
+
+            <!-- LOOP 1 -->
+            <a class="popular-pill" href="player.html?game=games/retrobowl/index.html">
+              <span class="pill-thumb" style="background-image:url('thumbs/retrobowl.png')"></span>
+              <span class="pill-name">Retro Bowl</span>
+            </a>
+
+            <a class="popular-pill" href="player.html?game=games/balatro/index.html">
+              <span class="pill-thumb" style="background-image:url('thumbs/balatro.jpeg')"></span>
+              <span class="pill-name">Balatro</span>
+            </a>
+
+            <a class="popular-pill" href="player.html?game=games/geometrydash/index.html">
+              <span class="pill-thumb" style="background-image:url('thumbs/geometrydash.png')"></span>
+              <span class="pill-name">Geometry Dash</span>
+            </a>
+
+            <a class="popular-pill" href="player.html?game=games/monkey-mart/index.html">
+              <span class="pill-thumb" style="background-image:url('thumbs/monkey-mart.jpeg')"></span>
+              <span class="pill-name">Monkey Mart</span>
+            </a>
+
+            <a class="popular-pill" href="player.html?game=games/level-devil/index.html">
+              <span class="pill-thumb" style="background-image:url('thumbs/leveldevil.jpeg')"></span>
+              <span class="pill-name">Level Devil</span>
+            </a>
+
+            <a class="popular-pill" href="player.html?game=games/snow-rider/index.html">
+              <span class="pill-thumb" style="background-image:url('thumbs/snow-rider.jpeg')"></span>
+              <span class="pill-name">Snow Rider 3D</span>
+            </a>
+
+            <!-- LOOP 2 -->
+            <a class="popular-pill" href="player.html?game=games/retrobowl/index.html">
+              <span class="pill-thumb" style="background-image:url('thumbs/retrobowl.png')"></span>
+              <span class="pill-name">Retro Bowl</span>
+            </a>
+
+            <a class="popular-pill" href="player.html?game=games/harvestsimulator/index.html">
+              <span class="pill-thumb" style="background-image:url('thumbs/harvestsimulator.png')"></span>
+              <span class="pill-name">Harvest Simulator</span>
+            </a>
+
+            <a class="popular-pill" href="player.html?game=games/gun-spin/index.html">
+              <span class="pill-thumb" style="background-image:url('thumbs/gun-spin.jpeg')"></span>
+              <span class="pill-name">Gun Spin</span>
+            </a>
+
+            <a class="popular-pill" href="player.html?game=games/monkey-mart/index.html">
+              <span class="pill-thumb" style="background-image:url('thumbs/monkey-mart.jpeg')"></span>
+              <span class="pill-name">Monkey Mart</span>
+            </a>
+
+            <a class="popular-pill" href="player.html?game=games/level-devil/index.html">
+              <span class="pill-thumb" style="background-image:url('thumbs/leveldevil.jpeg')"></span>
+              <span class="pill-name">Level Devil</span>
+            </a>
+
+            <a class="popular-pill" href="player.html?game=games/drift-boss/index.html">
+              <span class="pill-thumb" style="background-image:url('thumbs/drift-boss.jpeg')"></span>
+              <span class="pill-name">Drift Boss</span>
+            </a>
+
           </div>
         </div>
       </section>
+
+      <!-- ========= VISITOR COUNTER (NEW) ========= -->
+      <section class="home-panel" id="visitor-panel" style="margin-top: 24px;">
+        <div class="motd-label">VISITORS</div>
+
+        <div class="visitor-stats">
+          <div class="visitor-box">
+            <div class="visitor-label">TODAY</div>
+            <div id="vis-today" class="visitor-number">0</div>
+          </div>
+
+          <div class="visitor-box">
+            <div class="visitor-label">THIS WEEK</div>
+            <div id="vis-week" class="visitor-number">0</div>
+          </div>
+
+          <div class="visitor-box">
+            <div class="visitor-label">ALL TIME</div>
+            <div id="vis-all" class="visitor-number">0</div>
+          </div>
+        </div>
+      </section>
+
     </main>
 
     <!-- MOTD Script -->
@@ -166,6 +245,56 @@
 
       motdEl.addEventListener("click", setRandomMotd);
       setRandomMotd();
+    </script>
+
+    <!-- Firebase Visitor Counter -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+      import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+      const firebaseConfig = {
+  apiKey: "AIzaSyBbgy76ThxHaKlOhpiLQ6Nw4ekR1b9t3DA",
+  authDomain: "s0lace-web.firebaseapp.com",
+  projectId: "s0lace-web",
+  storageBucket: "s0lace-web.firebasestorage.app",
+  messagingSenderId: "13647464646",
+  appId: "1:13647464646:web:1740543331353695faafc7",
+  measurementId: "G-6979E6LHZL"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
+
+      function getWeekNumber(date) {
+        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        const dayNum = d.getUTCDay() || 7;
+        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+        const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+      }
+
+      const todayKey = new Date().toISOString().split("T")[0];
+      const weekKey = "week_" + getWeekNumber(new Date());
+
+      async function incrementCounters() {
+        const allRef = ref(db, "visitors_alltime");
+        const todayRef = ref(db, "visitors_today/" + todayKey);
+        const weekRef = ref(db, "visitors_week/" + weekKey);
+
+        const all = (await get(allRef)).val() || 0;
+        const today = (await get(todayRef)).val() || 0;
+        const week = (await get(weekRef)).val() || 0;
+
+        set(allRef, all + 1);
+        set(todayRef, today + 1);
+        set(weekRef, week + 1);
+
+        document.getElementById("vis-all").textContent = all + 1;
+        document.getElementById("vis-today").textContent = today + 1;
+        document.getElementById("vis-week").textContent = week + 1;
+      }
+
+      window.addEventListener("load", incrementCounters);
     </script>
 
   </body>
