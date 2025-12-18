@@ -1,134 +1,201 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>S0LACE</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>S0LACE</title>
 
-<link rel="shortcut icon" href="favicon.ico">
-<link rel="stylesheet" href="index.css">
+  <link rel="shortcut icon" href="favicon.ico" />
+  <link rel="stylesheet" href="index.css" />
 
-<!-- Scramjet stack -->
-<script src="/scram/scramjet.all.js"></script>
-<script src="baremux/index.js" defer></script>
-<script src="epoxy/index.js" defer></script>
-<script src="register-sw.js" defer></script>
-<script src="search.js" defer></script>
-<script src="index.js" defer></script>
-<script src="global-hub.js" defer></script>
+  <!-- Scramjet -->
+  <script src="/scram/scramjet.all.js"></script>
+  <script src="baremux/index.js" defer></script>
+  <script src="epoxy/index.js" defer></script>
+  <script src="register-sw.js" defer></script>
+  <script src="search.js" defer></script>
+  <script src="index.js" defer></script>
+  <script src="global-hub.js" defer></script>
 
-<style>
-body{min-height:100vh}
-main{min-height:100vh;display:flex;justify-content:center;align-items:center}
-.home-wrap{max-width:720px;padding:32px;text-align:center}
-.home-title{font-size:64px;font-weight:800;color:var(--fg)}
-.home-version{margin-top:12px;font-size:11px;font-family:"Press Start 2P";color:var(--fg-dim)}
-.home-status{margin-top:14px;font-family:"Press Start 2P";font-size:10px;color:var(--fg-dim)}
-.home-status span{margin:0 6px}
-#clock{color:var(--fg)}
-#battery{color:var(--accent)}
-.proxy-wrap{margin-top:28px}
-#sj-address{width:100%;padding:18px 22px;border-radius:16px;font-size:16px;
-background:rgba(255,255,255,.03);color:var(--fg);
-border:2px solid color-mix(in srgb,var(--accent)55%,transparent)}
-.visitor-meta{margin-top:36px;display:flex;gap:28px;justify-content:center;
-font-family:"Press Start 2P";font-size:10px;color:var(--fg-dim)}
-.visitor-meta span{color:var(--accent)}
-</style>
+  <style>
+    body { min-height: 100vh; }
+    main {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    body.sj-proxied iframe,
+    body.sj-proxied .scramjet-frame,
+    body.sj-proxied .bare-frame {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      border: none;
+      z-index: 1;
+    }
+
+    .home-wrap {
+      max-width: 720px;
+      width: 100%;
+      padding: 32px;
+      text-align: center;
+    }
+
+    .home-title {
+      font-size: 64px;
+      font-weight: 800;
+      color: var(--fg);
+    }
+
+    .home-version {
+      margin-top: 14px;
+      font-size: 11px;
+      font-family: "Press Start 2P";
+      color: var(--fg-dim);
+    }
+
+    .home-status {
+      margin-top: 16px;
+      font-family: "Press Start 2P";
+      font-size: 10px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      color: var(--fg-dim);
+    }
+
+    #clock { color: var(--fg); }
+    #battery { color: var(--accent); }
+
+    .proxy-wrap { margin-top: 28px; }
+
+    #sj-address {
+      width: 100%;
+      padding: 18px 22px;
+      font-size: 16px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.03);
+      color: var(--fg);
+      border: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+      outline: none;
+    }
+
+    .visitor-meta {
+      margin-top: 36px;
+      display: flex;
+      justify-content: center;
+      gap: 28px;
+      font-family: "Press Start 2P";
+      font-size: 10px;
+      color: var(--fg-dim);
+    }
+
+    .visitor-meta span { color: var(--accent); }
+  </style>
 </head>
 
 <body>
 
+<!-- SIDE NAV -->
 <nav class="side-header">
-  <a href="index.html" class="side-icon" data-icon="home"><img></a>
-  <a href="games.html" class="side-icon" data-icon="games"><img></a>
-  <a href="media.html" class="side-icon" data-icon="media"><img></a>
-  <a href="settings.html" class="side-icon" data-icon="settings"><img></a>
+  <a href="index.html" class="side-icon" data-icon="home"><img /></a>
+  <a href="games.html" class="side-icon" data-icon="games"><img /></a>
+  <a href="media.html" class="side-icon" data-icon="media"><img /></a>
+  <a href="settings.html" class="side-icon" data-icon="settings"><img /></a>
 </nav>
 
 <main>
-<div class="home-wrap">
-  <div class="home-title">S0LACE</div>
-  <div class="home-version">v1.2.0</div>
+  <div class="home-wrap">
+    <div class="home-title">S0LACE</div>
+    <div class="home-version">v1.2.0</div>
 
-  <div class="home-status">
-    <span id="clock">--:--</span>•
-    <span id="battery">--%</span>
-  </div>
+    <div class="home-status">
+      <span id="clock">--:--</span>
+      <span>•</span>
+      <span id="battery">--%</span>
+    </div>
 
-  <div class="proxy-wrap">
-    <form id="sj-form">
-      <input id="sj-search-engine" type="hidden"
-             value="https://www.google.com/search?q=%s">
-      <input id="sj-address" placeholder="Enter a URL or search Google">
-    </form>
-  </div>
+    <div class="proxy-wrap">
+      <form id="sj-form">
+        <input id="sj-search-engine" type="hidden"
+               value="https://www.google.com/search?q=%s" />
+        <input id="sj-address" placeholder="Enter a URL or search Google" />
+      </form>
+    </div>
 
-  <div class="visitor-meta">
-    <div>TODAY <span id="vis-today">—</span></div>
-    <div>WEEK <span id="vis-week">—</span></div>
-    <div>ALL <span id="vis-all">—</span></div>
+    <div class="visitor-meta">
+      <div>TODAY <span id="vis-today">—</span></div>
+      <div>WEEK <span id="vis-week">—</span></div>
+      <div>ALL <span id="vis-all">—</span></div>
+    </div>
   </div>
-</div>
 </main>
 
-<!-- CLOCK -->
+<!-- ICON SYNC -->
+<script>
+function getAccent(){ return localStorage.getItem("s0laceAccent") || "gray"; }
+function updateSideIcons(){
+  const accent = getAccent();
+  document.querySelectorAll(".side-icon").forEach(a=>{
+    const icon=a.dataset.icon, img=a.querySelector("img");
+    const active=a.href===location.href;
+    img.src=`thumbs/${icon}/${active?accent:"gray"}.png`;
+  });
+}
+updateSideIcons();
+window.addEventListener("storage",updateSideIcons);
+</script>
+
+<!-- CLOCK + BATTERY -->
 <script>
 function updateClock(){
   const d=new Date();
-  let h=d.getHours(),m=d.getMinutes().toString().padStart(2,"0");
-  const ap=h>=12?"PM":"AM";h=h%12||12;
+  let h=d.getHours(), m=String(d.getMinutes()).padStart(2,"0");
+  const ap=h>=12?"PM":"AM";
+  h=h%12||12;
   clock.textContent=`${h}:${m} ${ap}`;
 }
-updateClock();setInterval(updateClock,1000);
-</script>
+updateClock(); setInterval(updateClock,1000);
 
-<!-- BATTERY -->
-<script>
-const batteryEl=document.getElementById("battery");
 if(navigator.getBattery){
   navigator.getBattery().then(b=>{
-    const u=()=>batteryEl.textContent=Math.round(b.level*100)+"%";
-    u();b.onlevelchange=u;b.onchargingchange=u;
+    const upd=()=>battery.textContent=Math.round(b.level*100)+"%";
+    upd(); b.onlevelchange=upd; b.onchargingchange=upd;
   });
-}else batteryEl.textContent="N/A";
+}else battery.textContent="N/A";
 </script>
 
-<!-- FIREBASE (SINGLE INIT, MERGED STATS + GEO) -->
+<!-- FIREBASE (SINGLE INIT + SAFE) -->
 <script type="module">
-import { initializeApp,getApps } from
+import { initializeApp, getApps } from
 "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase,ref,get,runTransaction } from
+import { getDatabase, ref, get, runTransaction } from
 "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-const app = getApps().length
-  ? getApps()[0]
-  : initializeApp({
-      apiKey:"AIzaSyBbgy76ThxHaKlOhpiLQ6Nw4ekR1b9t3DA",
-      authDomain:"s0lace-web.firebaseapp.com",
-      databaseURL:"https://s0lace-web-default-rtdb.firebaseio.com",
-      projectId:"s0lace-web"
-    });
+const cfg={
+  apiKey:"AIzaSyBbgy76ThxHaKlOhpiLQ6Nw4ekR1b9t3DA",
+  databaseURL:"https://s0lace-web-default-rtdb.firebaseio.com",
+  projectId:"s0lace-web"
+};
 
+const app=getApps().length?getApps()[0]:initializeApp(cfg);
 const db=getDatabase(app);
+
+const elAll=document.getElementById("vis-all");
+const elToday=document.getElementById("vis-today");
+const elWeek=document.getElementById("vis-week");
+
 const today=()=>new Date().toISOString().split("T")[0];
 const week=()=>{
   const d=new Date(),j=new Date(d.getFullYear(),0,1);
-  return"week_"+Math.ceil((((d-j)/86400000)+j.getDay()+1)/7);
+  return "week_"+Math.ceil((((d-j)/86400000)+j.getDay()+1)/7);
 };
 
-async function read(){
-  const [a,t,w]=await Promise.all([
-    get(ref(db,"visitors/all")).then(s=>s.val()||0),
-    get(ref(db,"visitors/today/"+today())).then(s=>s.val()||0),
-    get(ref(db,"visitors/week/"+week())).then(s=>s.val()||0)
-  ]);
-  vis-all.textContent=a;
-  vis-today.textContent=t;
-  vis-week.textContent=w;
-}
-
-if(!sessionStorage.getItem("s0lace-counted")){
+async function incrementOnce(){
+  if(sessionStorage.getItem("s0lace-counted")) return;
   sessionStorage.setItem("s0lace-counted","1");
   await Promise.all([
     runTransaction(ref(db,"visitors/all"),v=>(v||0)+1),
@@ -137,18 +204,19 @@ if(!sessionStorage.getItem("s0lace-counted")){
   ]);
 }
 
-if(!sessionStorage.getItem("s0lace-geo")){
-  sessionStorage.setItem("s0lace-geo","1");
-  try{
-    const g=await (await fetch("https://ipapi.co/json")).json();
-    await Promise.all([
-      runTransaction(ref(db,"geo/countries/"+(g.country_name||"Unknown")),v=>(v||0)+1),
-      runTransaction(ref(db,"geo/regions/"+(g.region||"Unknown")),v=>(v||0)+1)
-    ]);
-  }catch{}
+async function render(){
+  const [a,t,w]=await Promise.all([
+    get(ref(db,"visitors/all")),
+    get(ref(db,"visitors/today/"+today())),
+    get(ref(db,"visitors/week/"+week()))
+  ]);
+  elAll.textContent=a.val()||0;
+  elToday.textContent=t.val()||0;
+  elWeek.textContent=w.val()||0;
 }
 
-read();
+await incrementOnce();
+await render();
 </script>
 
 </body>
