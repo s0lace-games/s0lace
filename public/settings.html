@@ -2,366 +2,116 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>S0LACE • Settings</title>
-
-  <link rel="shortcut icon" href="favicon.ico" />
   <link rel="stylesheet" href="index.css" />
-
-  <script src="global-hub.js" defer></script>
-  <script src="register-sw.js" defer></script>
-
   <style>
-    .settings-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin-bottom: 30px;
+    /* Local overrides for the Modern-Rounded look */
+    .settings-container {
+      max-width: 600px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
     }
-    @media (max-width: 1000px) { .settings-grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 700px)  { .settings-grid { grid-template-columns: 1fr; } }
-
-    .settings-panel {
-      border: 2px solid var(--border-hard);
-      background: var(--panel);
-      padding: 16px;
-      font-family: "Press Start 2P";
-      font-size: 10px;
+    .settings-card {
+      background: rgba(8, 8, 8, 0.7);
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
-
-    .settings-title {
+    .section-label {
       color: var(--accent);
+      font-size: 8px;
       margin-bottom: 12px;
-      text-shadow: 0 0 6px var(--accent);
+      letter-spacing: 2px;
     }
-
-    .settings-input,
-    .settings-select {
+    select, input {
       width: 100%;
-      padding: 6px;
-      margin-top: 6px;
-      border: 2px solid var(--border-hard);
-      background: #000;
-      color: var(--fg);
-      font-family: "Press Start 2P";
-      font-size: 9px;
+      background: rgba(0,0,0,0.5) !important;
+      border: 1px solid rgba(255,255,255,0.1) !important;
+      border-radius: 50px !important;
+      padding: 12px 20px !important;
+      color: #fff !important;
+      font-family: "Press Start 2P" !important;
+      font-size: 8px !important;
+      margin-bottom: 10px;
+      outline: none;
     }
-
-    .settings-btn {
+    button.pill-btn {
       width: 100%;
-      margin-top: 8px;
-      padding: 6px;
-      border: 2px solid var(--accent);
+      border-radius: 50px;
+      padding: 12px;
       background: var(--accent-soft);
+      border: 2px solid var(--accent);
       color: var(--accent);
       font-family: "Press Start 2P";
-      font-size: 9px;
+      font-size: 8px;
       cursor: pointer;
+      transition: 0.3s;
     }
-
-    .settings-btn:hover {
-      box-shadow: 0 0 10px var(--accent);
+    button.pill-btn:hover {
+      background: var(--accent);
+      color: #000;
+      box-shadow: 0 0 15px var(--accent);
     }
   </style>
 </head>
-
 <body>
+
 <nav class="side-header">
-  <a href="index.html" class="side-icon" data-icon="home">
-    <img />
-  </a>
-
-  <a href="games.html" class="side-icon" data-icon="games">
-    <img />
-  </a>
-
-  <a href="media.html" class="side-icon" data-icon="media">
-    <img />
-  </a>
-
-  <a href="settings.html" class="side-icon" data-icon="settings">
-    <img />
-  </a>
+  <a href="index.html" class="side-icon" data-icon="home"><img src="thumbs/home/white.png"/></a>
+  <a href="games.html" class="side-icon" data-icon="games"><img src="thumbs/games/white.png"/></a>
+  <a href="media.html" class="side-icon" data-icon="media"><img src="thumbs/media/white.png"/></a>
+  <a href="settings.html" class="side-icon active" data-icon="settings"><img src="thumbs/settings/white.png"/></a>
 </nav>
 
-
 <main>
-  <div class="page-header"><h1>Settings</h1></div>
+  <div class="page-header"><h1>SETTINGS</h1></div>
 
-  <div class="settings-grid">
-
-    <section class="settings-panel">
-      <div class="settings-title">TAB CLOAKING</div>
-
-      <select id="cloak-select" class="settings-select">
-        <option value="">SELECT…</option>
+  <div class="settings-container">
+    <div class="settings-card">
+      <div class="section-label">TAB CLOAKING</div>
+      <select id="cloak-select">
+        <option value="none">NONE</option>
         <option value="drive">GOOGLE DRIVE</option>
-        <option value="schoology">SCHOOLOGY</option>
-        <option value="docs">GOOGLE DOCS</option>
-        <option value="google">GOOGLE</option>
-        <option value="custom">CUSTOM</option>
+        <option value="google">GOOGLE SEARCH</option>
       </select>
+      <button class="pill-btn" id="cloak-reset">RESET TAB</button>
+    </div>
 
-      <div id="cloak-custom" style="display:none;">
-        <input id="cloak-title" class="settings-input" placeholder="Custom Title" />
-        <input id="cloak-icon" class="settings-input" placeholder="Favicon URL" />
-        <button class="settings-btn" id="cloak-apply" type="button">APPLY</button>
-      </div>
-
-      <button class="settings-btn" id="cloak-reset" type="button">RESET</button>
-    </section>
-
-    <section class="settings-panel">
-      <div class="settings-title">APPEARANCE</div>
-
-      <select id="theme-select" class="settings-select">
-        <option value="dark">DARK</option>
-        <option value="baby">BLUE</option>
-        <option value="xmas">GREEN</option>
+    <div class="settings-card">
+      <div class="section-label">APPEARANCE</div>
+      <select id="theme-select">
+        <option value="dark">DARK MODE</option>
+        <option value="baby">BABY BLUE</option>
+        <option value="xmas">XMAS GREEN</option>
       </select>
+    </div>
 
-      <select id="accent-select" class="settings-select">
-        <option value="green">GREEN</option>
-        <option value="violet">VIOLET</option>
-        <option value="amber">AMBER</option>
-        <option value="white">WHITE</option>
+    <div class="settings-card" style="border: 1px solid var(--accent);">
+      <div class="section-label">PREFERRED PLAYER</div>
+      <select id="media-source-select">
+        <option value="vidfast">VIDFAST PRO (DEFAULT)</option>
+        <option value="cinemaos">CINEMAOS.TECH</option>
       </select>
-    </section>
-
-    <section class="settings-panel">
-      <div class="settings-title">BACKGROUND</div>
-
-      <select id="bg-mode" class="settings-select">
-        <option value="default">DEFAULT</option>
-        <option value="gif-stars">STARRY GIF</option>
-        <option value="custom">CUSTOM</option>
-      </select>
-
-      <input id="bg-url" class="settings-input" placeholder="Image URL" />
-    </section>
-
-    <section class="settings-panel">
-      <div class="settings-title">SECURITY</div>
-
-      <label>
-        <input type="checkbox" id="anti-close-toggle" />
-        ENABLE ANTI-CLOSE
-      </label>
-
-      <button class="settings-btn" id="blank-launch" type="button">
-        LAUNCH ABOUT:BLANK
-      </button>
-    </section>
-
-    <section class="settings-panel">
-      <div class="settings-title">SAVE / LOAD</div>
-      <button class="settings-btn" id="export-settings" type="button">EXPORT DATA</button>
-      <input type="file" id="import-file" hidden accept="application/json" />
-      <button class="settings-btn" id="import-settings" type="button">IMPORT DATA</button>
-    </section>
-
-    <section class="settings-panel">
-      <div class="settings-title">INFO</div>
-      <a href="about.html"><button class="settings-btn" type="button">ABOUT US</button></a>
-    </section>
-
-    <section class="settings-panel">
-      <div class="settings-title">MEDIA SOURCE</div>
-      <select id="media-source-select" class="settings-select">
-        <option value="vidfast">VIDFAST.PRO (Default)</option>
-        <option value="cinemaos">CINEMA OS</option>
-      </select>
-    </section>
-
+    </div>
   </div>
 </main>
 
 <script>
-(function () {
-  // Wait until DOM exists
   document.addEventListener("DOMContentLoaded", () => {
-    // Wait until global-hub has created window.S0LACE (because it's defer)
-    const waitForS0LACE = (tries = 0) => {
-      if (window.S0LACE) return init();
-      if (tries > 200) return console.error("S0LACE API never loaded (global-hub.js not running).");
-      setTimeout(() => waitForS0LACE(tries + 1), 25);
-    };
-    waitForS0LACE();
-  });
-
-  function init() {
-    /* ---------- ELEMENTS ---------- */
     const mediaSelect = document.getElementById("media-source-select");
-
-    const cloakSelect = document.getElementById("cloak-select");
-    const cloakCustom = document.getElementById("cloak-custom");
-    const cloakTitle  = document.getElementById("cloak-title");
-    const cloakIcon   = document.getElementById("cloak-icon");
-    const cloakApply  = document.getElementById("cloak-apply");
-    const cloakReset  = document.getElementById("cloak-reset");
-
-    const themeSelect  = document.getElementById("theme-select");
-    const accentSelect = document.getElementById("accent-select");
-
-    const bgMode = document.getElementById("bg-mode");
-    const bgUrl  = document.getElementById("bg-url");
-
-    const antiClose = document.getElementById("anti-close-toggle");
-    const blankBtn  = document.getElementById("blank-launch");
-
-    const exportBtn = document.getElementById("export-settings");
-    const importBtn = document.getElementById("import-settings");
-    const importFile = document.getElementById("import-file");
-
-    /* ---------- MEDIA SOURCE ---------- */
-    // Default to 'vidfast' if not set
-    mediaSelect.value = localStorage.getItem("s0laceMediaSource") || "vidfast";
     
+    // Load saved source
+    mediaSelect.value = localStorage.getItem("s0laceMediaSource") || "vidfast";
+
+    // Save on change
     mediaSelect.addEventListener("change", () => {
-        localStorage.setItem("s0laceMediaSource", mediaSelect.value);
+      localStorage.setItem("s0laceMediaSource", mediaSelect.value);
     });
-
-    /* ---------- TAB CLOAK ---------- */
-    const PRESETS = {
-      drive: { enabled:true, title:"My Drive - Google Drive", iconHref:"https://ssl.gstatic.com/docs/doclist/images/drive_2022q3_32dp.png" },
-      schoology: { enabled:true, title:"Schoology", iconHref:"https://asset-cdn.schoology.com/sites/all/themes/schoology_theme/favicon.ico" },
-      docs: { enabled:true, title:"Google Docs", iconHref:"https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico" },
-      google: { enabled:true, title:"Google", iconHref:"favicon.ico" }
-    };
-
-    function applyCloak(cfg) {
-      cfg.enabled = true;
-      window.S0LACE.applyTabCloak(cfg, true);
-      localStorage.setItem("s0laceTabCloak", JSON.stringify(cfg));
-    }
-
-    cloakSelect.addEventListener("change", () => {
-      const v = cloakSelect.value;
-      cloakCustom.style.display = (v === "custom") ? "block" : "none";
-      if (PRESETS[v]) applyCloak(PRESETS[v]);
-    });
-
-    cloakApply.addEventListener("click", () => {
-      const title = (cloakTitle?.value || "").trim();
-      const icon  = (cloakIcon?.value || "").trim();
-      if (!title) return;
-      applyCloak({ enabled:true, title, iconHref: icon });
-    });
-
-    cloakReset.addEventListener("click", () => {
-      window.S0LACE.clearTabCloak(true);
-      localStorage.removeItem("s0laceTabCloak");
-      cloakSelect.value = "";
-      cloakCustom.style.display = "none";
-    });
-
-    /* ---------- APPEARANCE ---------- */
-    themeSelect.addEventListener("change", e =>
-      window.S0LACE.applyTheme(e.target.value, true)
-    );
-
-    accentSelect.addEventListener("change", e =>
-      window.S0LACE.applyAccent(e.target.value, true)
-    );
-
-    /* ---------- BACKGROUND ---------- */
-    bgMode.addEventListener("change", () => {
-      window.S0LACE.applyBackground(bgMode.value, bgUrl.value, true);
-    });
-
-    bgUrl.addEventListener("blur", () => {
-      if (bgMode.value === "custom") {
-        window.S0LACE.applyBackground("custom", bgUrl.value, true);
-      }
-    });
-
-    /* ---------- SECURITY ---------- */
-    antiClose.checked = (localStorage.getItem("s0laceAntiClose") === "1");
-
-    antiClose.addEventListener("change", e => {
-      e.target.checked ? window.S0LACE.enableAntiClose() : window.S0LACE.disableAntiClose();
-    });
-
-    blankBtn.addEventListener("click", () => {
-      const w = window.open("about:blank", "_blank");
-      if (!w) return alert("Popup blocked");
-
-      w.document.open();
-      w.document.write(`
-        <!doctype html>
-        <html>
-          <head>
-            <meta name="viewport" content="width=device-width,initial-scale=1" />
-            <style>
-              html,body{margin:0;height:100%;background:#000;overflow:hidden}
-              iframe{width:100%;height:100%;border:0;display:block}
-            </style>
-          </head>
-          <body>
-            <iframe src="${location.origin}/index.html"></iframe>
-          </body>
-        </html>
-      `);
-      w.document.close();
-    });
-
-    /* ---------- EXPORT / IMPORT ---------- */
-    exportBtn.addEventListener("click", () => {
-      const obj = {};
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        obj[k] = localStorage.getItem(k);
-      }
-      const data = JSON.stringify(obj, null, 2);
-      const blob = new Blob([data], { type: "application/json" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "s0lace-backup.json";
-      a.click();
-      URL.revokeObjectURL(a.href);
-    });
-
-    importBtn.addEventListener("click", () => importFile.click());
-
-    importFile.addEventListener("change", () => {
-      const file = importFile.files && importFile.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        try {
-          const data = JSON.parse(reader.result);
-          Object.entries(data).forEach(([k, v]) => localStorage.setItem(k, String(v)));
-          alert("Data restored!");
-          location.reload();
-        } catch (e) {
-          alert("Invalid JSON file.");
-        }
-      };
-      reader.readAsText(file);
-    });
-  }
-})();
-</script>
-
-<script>
-function getAccent() {
-  return localStorage.getItem("s0laceAccent") || "gray";
-}
-
-function updateSideIcons() {
-  const accent = getAccent();
-  document.querySelectorAll(".side-icon").forEach(link => {
-    const icon = link.dataset.icon;
-    const img = link.querySelector("img");
-    const isActive = location.pathname.endsWith(link.getAttribute("href"));
-    link.classList.toggle("active", isActive);
-    img.src = `thumbs/${icon}/${isActive ? accent : "gray"}.png`;
   });
-}
-updateSideIcons();
-window.addEventListener("storage", updateSideIcons);
 </script>
-
 </body>
 </html>
