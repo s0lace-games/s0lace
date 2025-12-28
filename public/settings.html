@@ -91,17 +91,6 @@
   <div class="settings-grid">
 
     <section class="settings-panel">
-      <div class="settings-title">MEDIA SOURCE</div>
-      <div style="margin-bottom:8px; color:#aaa; font-size:8px;">
-        Choose which provider plays your videos.
-      </div>
-      <select id="media-source-select" class="settings-select">
-        <option value="cinemaos">CINEMA OS (Default)</option>
-        <option value="vidfast">VIDFAST.PRO</option>
-      </select>
-    </section>
-
-    <section class="settings-panel">
       <div class="settings-title">TAB CLOAKING</div>
 
       <select id="cloak-select" class="settings-select">
@@ -166,9 +155,6 @@
 
     <section class="settings-panel">
       <div class="settings-title">SAVE / LOAD</div>
-      <div style="margin-bottom:8px; color:#aaa; font-size:8px;">
-        This saves settings AND continue watching history.
-      </div>
       <button class="settings-btn" id="export-settings" type="button">EXPORT DATA</button>
       <input type="file" id="import-file" hidden accept="application/json" />
       <button class="settings-btn" id="import-settings" type="button">IMPORT DATA</button>
@@ -177,6 +163,14 @@
     <section class="settings-panel">
       <div class="settings-title">INFO</div>
       <a href="about.html"><button class="settings-btn" type="button">ABOUT US</button></a>
+    </section>
+
+    <section class="settings-panel">
+      <div class="settings-title">MEDIA SOURCE</div>
+      <select id="media-source-select" class="settings-select">
+        <option value="vidfast">VIDFAST.PRO (Default)</option>
+        <option value="cinemaos">CINEMA OS</option>
+      </select>
     </section>
 
   </div>
@@ -220,8 +214,8 @@
     const importFile = document.getElementById("import-file");
 
     /* ---------- MEDIA SOURCE ---------- */
-    // Load saved setting or default to cinemaos
-    mediaSelect.value = localStorage.getItem("s0laceMediaSource") || "cinemaos";
+    // Default to 'vidfast' if not set
+    mediaSelect.value = localStorage.getItem("s0laceMediaSource") || "vidfast";
     
     mediaSelect.addEventListener("change", () => {
         localStorage.setItem("s0laceMediaSource", mediaSelect.value);
@@ -314,8 +308,6 @@
     /* ---------- EXPORT / IMPORT ---------- */
     exportBtn.addEventListener("click", () => {
       const obj = {};
-      // This grabs ALL keys, including "s0lace-continue" (Continue Watching)
-      // and "s0laceMediaSource" (The player setting)
       for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i);
         obj[k] = localStorage.getItem(k);
@@ -340,7 +332,7 @@
         try {
           const data = JSON.parse(reader.result);
           Object.entries(data).forEach(([k, v]) => localStorage.setItem(k, String(v)));
-          alert("Settings & Continue Watching restored!");
+          alert("Data restored!");
           location.reload();
         } catch (e) {
           alert("Invalid JSON file.");
