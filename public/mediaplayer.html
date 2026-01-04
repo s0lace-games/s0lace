@@ -5,11 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
     <title>S0LACE • Media Player</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css" />
+    <script src="baremux/index.js"></script>
+    <script src="epoxy/index.js"></script>
     <style>
       body, html {
         margin: 0; padding: 0; height: 100%;
         background-color: #0f0f0f; font-family: 'Press Start 2P', cursive;
-        display: flex; flex-direction: column; overflow: hidden;
+        display: flex; overflow: hidden;
       }
       .player-main { display: flex; flex-direction: column; height: 100vh; width: 100%; }
       .player-frame-wrap {
@@ -18,10 +21,7 @@
         background: #000; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
       }
       #media-frame { width: 100%; height: 100%; border: none; display: block; }
-      .player-controls {
-        height: 70px; display: flex; align-items: center;
-        padding: 0 20px; justify-content: flex-start; /* Aligned Left */
-      }
+      .player-controls { height: 75px; display: flex; align-items: center; padding: 0 25px; }
       #reload-btn {
         background: rgba(255, 255, 255, 0.08); color: white;
         border: 1px solid rgba(255, 255, 255, 0.15);
@@ -33,15 +33,20 @@
       .player-loading {
         position: absolute; inset: 0; display: flex; align-items: center;
         justify-content: center; flex-direction: column;
-        font-size: 10px; /* Smaller for pixel font */
-        color: #fff; background: #000; z-index: 2;
-        text-align: center; padding: 20px; line-height: 1.8;
+        font-size: 10px; color: #fff; background: #000; z-index: 2;
+        text-align: center; padding: 20px;
       }
       #player-loading-sub { margin-top: 15px; opacity: 0.6; font-size: 8px; }
-      .no-src { color: white; text-align: center; margin-top: 50px; font-size: 12px; }
     </style>
   </head>
   <body>
+    <nav class="side-header">
+      <a href="index.html" class="side-icon" data-icon="home"><img></a>
+      <a href="games.html" class="side-icon" data-icon="games"><img></a>
+      <a href="media.html" class="side-icon" data-icon="media"><img></a>
+      <a href="settings.html" class="side-icon" data-icon="settings"><img></a>
+    </nav>
+
     <main class="player-main">
       <div class="player-frame-wrap">
         <div id="player-loading" class="player-loading">
@@ -53,32 +58,40 @@
       <div class="player-controls">
         <button id="reload-btn" title="Reload Media">↻</button>
       </div>
-      <div id="player-error" class="no-src" style="display:none;">NO MEDIA URL PROVIDED.</div>
     </main>
+
+    <script>
+      // Sidebar logic
+      function getAccent() { return localStorage.getItem("s0laceAccent") || "gray"; }
+      function updateSideIcons() {
+        const accent = getAccent();
+        document.querySelectorAll(".side-icon").forEach(link => {
+          const icon = link.dataset.icon;
+          const img = link.querySelector("img");
+          const isActive = location.pathname.endsWith(link.getAttribute("href"));
+          link.classList.toggle("active", isActive);
+          img.src = `thumbs/${icon}/${isActive ? accent : "gray"}.png`;
+        });
+      }
+      updateSideIcons();
+    </script>
+
     <script>
       (async () => {
         const params = new URLSearchParams(window.location.search);
         const src = params.get("src");
         const frame = document.getElementById("media-frame");
         const loadingEl = document.getElementById("player-loading");
-        const reloadBtn = document.getElementById("reload-btn");
 
-        if (!src) {
-          document.querySelector(".player-frame-wrap").style.display = "none";
-          document.getElementById("player-error").style.display = "block";
-          return;
-        }
-
-        reloadBtn.addEventListener("click", () => {
-          loadingEl.style.display = "flex";
+        if (src) {
+          frame.addEventListener("load", () => { loadingEl.style.display = "none"; });
           frame.src = src;
-        });
-
-        frame.addEventListener("load", () => {
-          loadingEl.style.display = "none";
-        });
+        }
         
-        frame.src = src;
+        document.getElementById("reload-btn").addEventListener("click", () => {
+          loadingEl.style.display = "flex";
+          frame.src = frame.src;
+        });
       })();
     </script>
   </body>
