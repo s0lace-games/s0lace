@@ -1637,6 +1637,43 @@ main.player-main {
   outline: none !important;
 }
 
+  /* MEDIA CARDS — REMOVE BLOCK CONTAINER */
+.media-card {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* KILL ALL BROWSER FOCUS / ACTIVE STYLES */
+.media-card:focus,
+.media-card:focus-visible,
+.media-card:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.media-card {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* POSTER IS THE ONLY VISUAL ELEMENT */
+.poster-thumb {
+  border-radius: 18px;
+  overflow: hidden;
+  background: transparent !important;
+}
+
+/* IMAGE MUST FILL + CLIP */
+.poster-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+}
+
+
 /* PREVENT CHROME FROM DRAWING ACCESSIBILITY RING */
 .media-card {
   -webkit-tap-highlight-color: transparent;
