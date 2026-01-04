@@ -1,54 +1,119 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
     <title>S0LACE • Player</title>
 
     <link rel="shortcut icon" content="favicon.ico" />
     <link rel="stylesheet" href="index.css" />
     <script src="global-hub.js" defer></script>
     <script src="register-sw.js" defer></script>
+
+    <style>
+      body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+        background-color: #0f0f0f; /* Dark background */
+      }
+
+      .player-main {
+        display: flex;
+        height: 100vh;
+        width: 100vw;
+        position: relative;
+      }
+
+      /* Container for the iframe to allow rounding */
+      .player-frame-wrap {
+        flex-grow: 1;
+        margin: 20px;
+        border-radius: 20px; /* Rounded Corners for Frame */
+        overflow: hidden;
+        background: #000;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      }
+
+      iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        display: block;
+      }
+
+      /* Buttons Container - Bottom Left */
+      .player-actions {
+        position: absolute;
+        bottom: 40px;
+        left: 40px;
+        display: flex;
+        gap: 12px;
+        z-index: 10;
+      }
+
+      /* Big Rounded Buttons */
+      .player-actions button {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 12px 24px;
+        border-radius: 50px; /* Fully Rounded */
+        font-family: sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .player-actions button:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+      }
+
+      /* Hide the title info as requested */
+      .player-info {
+        display: none;
+      }
+
+      .no-src {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-family: sans-serif;
+      }
+    </style>
   </head>
 
   <body>
     <nav class="side-header">
-  <a href="index.html" class="side-icon" data-icon="home">
-    <img />
-  </a>
-
-  <a href="games.html" class="side-icon" data-icon="games">
-    <img />
-  </a>
-
-  <a href="media.html" class="side-icon" data-icon="media">
-    <img />
-  </a>
-
-  <a href="settings.html" class="side-icon" data-icon="settings">
-    <img />
-  </a>
-</nav>
-
+      <a href="index.html" class="side-icon" data-icon="home"><img></a>
+      <a href="games.html" class="side-icon" data-icon="games"><img></a>
+      <a href="media.html" class="side-icon" data-icon="media"><img></a>
+      <a href="settings.html" class="side-icon" data-icon="settings"><img></a>
+    </nav>
 
     <main class="player-main">
-      <div class="player-info">
-        <div class="player-left" id="media-title">Loading game…</div>
-        <div class="player-actions">
-          <button type="button" id="reload-btn">↻ </button>
-          <button type="button" id="fullscreen-btn">⌞ ⌝ </button>
-        </div>
-      </div>
-
       <div class="player-frame-wrap" id="frame-wrap">
         <iframe id="media-frame" allowfullscreen></iframe>
       </div>
 
+      <div class="player-actions">
+        <button type="button" id="reload-btn">↻ Reload</button>
+        <button type="button" id="fullscreen-btn">⌞⌝ Fullscreen</button>
+        <button type="button" id="blank-btn">❐ Open Blank</button>
+      </div>
+
       <div class="no-src" id="no-src-msg" style="display: none;">
-        No game URL provided.<br />
+        No game URL provided.
       </div>
     </main>
 
@@ -59,102 +124,75 @@
       const frame = document.getElementById("media-frame");
       const wrap = document.getElementById("frame-wrap");
       const noSrc = document.getElementById("no-src-msg");
-      const titleEl = document.getElementById("media-title");
       const reloadBtn = document.getElementById("reload-btn");
       const fullscreenBtn = document.getElementById("fullscreen-btn");
+      const blankBtn = document.getElementById("blank-btn");
 
       let originalSrc = null;
 
       if (srcParam) {
         originalSrc = decodeURIComponent(srcParam);
-        // crude title from filename
-        const parts = originalSrc.split("/");
-        const last = parts[parts.length - 1] || originalSrc;
-        titleEl.textContent = last;
         frame.src = originalSrc;
       } else {
         wrap.style.display = "none";
         noSrc.style.display = "flex";
-        titleEl.textContent = "No game loaded";
-        reloadBtn.disabled = true;
-        fullscreenBtn.disabled = true;
+        reloadBtn.style.display = "none";
+        fullscreenBtn.style.display = "none";
+        blankBtn.style.display = "none";
       }
 
       reloadBtn.addEventListener("click", () => {
-        if (!originalSrc) return;
-        frame.src = originalSrc;
+        if (originalSrc) frame.src = originalSrc;
       });
 
+      // About:Blank Cloaking Function
+      blankBtn.addEventListener("click", () => {
+        if (!originalSrc) return;
+        const win = window.open("about:blank", "_blank");
+        if (!win) {
+            alert("Please allow popups for this site");
+            return;
+        }
+        const iframe = win.document.createElement("iframe");
+        win.document.body.style.margin = "0";
+        win.document.body.style.height = "100vh";
+        iframe.style.border = "none";
+        iframe.style.width = "100%";
+        iframe.style.height = "100%";
+        iframe.src = originalSrc;
+        win.document.body.appendChild(iframe);
+      });
+
+      // Fullscreen Logic
       function isFullscreen() {
-        return !!(
-          document.fullscreenElement ||
-          document.webkitFullscreenElement ||
-          document.mozFullScreenElement ||
-          document.msFullscreenElement
-        );
-      }
-
-      function requestFs(el) {
-        if (el.requestFullscreen) return el.requestFullscreen();
-        if (el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
-        if (el.mozRequestFullScreen) return el.mozRequestFullScreen();
-        if (el.msRequestFullscreen) return el.msRequestFullscreen();
-      }
-
-      function exitFs() {
-        if (document.exitFullscreen) return document.exitFullscreen();
-        if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
-        if (document.mozCancelFullScreen) return document.mozCancelFullScreen();
-        if (document.msExitFullscreen) return document.msExitFullscreen();
+        return !!(document.fullscreenElement || document.webkitFullscreenElement);
       }
 
       fullscreenBtn.addEventListener("click", () => {
-        if (!wrap) return;
         if (!isFullscreen()) {
-          requestFs(wrap);
+          if (wrap.requestFullscreen) wrap.requestFullscreen();
+          else if (wrap.webkitRequestFullscreen) wrap.webkitRequestFullscreen();
         } else {
-          exitFs();
+          if (document.exitFullscreen) document.exitFullscreen();
+          else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
         }
       });
-
-      function updateFsLabel() {
-        fullscreenBtn.textContent = isFullscreen()
-          ? "Exit Fullscreen"
-          : "Fullscreen";
-      }
-
-      document.addEventListener("fullscreenchange", updateFsLabel);
-      document.addEventListener("webkitfullscreenchange", updateFsLabel);
-      document.addEventListener("mozfullscreenchange", updateFsLabel);
-      document.addEventListener("MSFullscreenChange", updateFsLabel);
     </script>
 
     <script>
-function getAccent() {
-  return localStorage.getItem("s0laceAccent") || "gray";
-}
-
-function updateSideIcons() {
-  const accent = getAccent();
-
-  document.querySelectorAll(".side-icon").forEach(link => {
-    const icon = link.dataset.icon;
-    const img = link.querySelector("img");
-
-    const isActive =
-      location.pathname.endsWith(link.getAttribute("href"));
-
-    link.classList.toggle("active", isActive);
-
-    img.src = `thumbs/${icon}/${isActive ? accent : "gray"}.png`;
-  });
-}
-
-updateSideIcons();
-
-// Update when accent color changes
-window.addEventListener("storage", updateSideIcons);
-</script>
-
+      function getAccent() { return localStorage.getItem("s0laceAccent") || "gray"; }
+      function updateSideIcons() {
+        const accent = getAccent();
+        document.querySelectorAll(".side-icon").forEach(link => {
+          const icon = link.dataset.icon;
+          const img = link.querySelector("img");
+          const isActive = location.pathname.endsWith(link.getAttribute("href"));
+          link.classList.toggle("active", isActive);
+          img.src = `thumbs/${icon}/${isActive ? accent : "gray"}.png`;
+        });
+      }
+      updateSideIcons();
+      window.addEventListener("storage", updateSideIcons);
+    </script>
   </body>
 </html>
