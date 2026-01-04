@@ -32,6 +32,22 @@
   padding: 16px;
 }
 
+/* REMOVE BLOCK BACKGROUND FROM MEDIA GRID CELLS */
+.media-grid > *,
+.media-item {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.media-grid {
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-radius: 20px;
+}
+
+
 .media-card {
   background: transparent;
   border: none;               /* ← kills the frame */
