@@ -1283,6 +1283,19 @@ h1::after {
     0 0 16px rgba(0, 255, 127, 0.6);
 }
 
+.poster-thumb img {
+  border-radius: 16px;
+  display: block;
+}
+
+#media-search {
+  border-radius: 14px !important;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+
 /* ERROR */
 #sj-error {
   margin-top: 6px;
