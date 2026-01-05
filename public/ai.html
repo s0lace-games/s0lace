@@ -12,10 +12,11 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
       body {
-        margin: 0; padding: 0; height: 100%;
+        margin: 0; padding: 0; height: 100vh;
         background-color: #0f0f0f;
         display: flex; overflow: hidden; color: white;
       }
@@ -23,31 +24,30 @@
       .player-main {
         display: flex; flex-direction: column;
         height: 100vh; width: 100%;
-        font-family: 'Inter', -apple-system, sans-serif;
+        font-family: 'Inter', sans-serif;
       }
 
       .chat-shell {
-        flex: 1;
-        margin: 15px;
-        background: #050505;
-        border-radius: 20px;
+        flex: 1; margin: 15px;
+        background: #050505; border-radius: 20px;
         border: 2px solid #1a1a1a;
         display: flex; flex-direction: column;
-        overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
       }
 
       #chat-history {
         flex: 1; overflow-y: auto; padding: 25px;
         display: flex; flex-direction: column; gap: 20px;
-        scroll-behavior: smooth;
       }
 
-      /* Markdown Styling */
-      .message { max-width: 85%; padding: 12px 20px; border-radius: 18px; line-height: 1.6; font-size: 14px; }
-      .message pre { background: #000; padding: 15px; border-radius: 10px; overflow-x: auto; position: relative; border: 1px solid #222; }
-      .message code { font-family: 'Courier New', monospace; color: #00ff7f; }
-      .copy-btn { position: absolute; top: 5px; right: 5px; background: #222; color: #fff; border: none; padding: 4px 8px; border-radius: 5px; cursor: pointer; font-size: 10px; }
+      .message { max-width: 85%; padding: 12px 20px; border-radius: 18px; line-height: 1.6; font-size: 14px; position: relative; }
+      .message pre { background: #000; padding: 15px; border-radius: 10px; overflow-x: auto; border: 1px solid #222; }
+      
+      .copy-btn { 
+        position: absolute; top: 10px; right: 10px; 
+        background: #333; color: #fff; border: none; 
+        padding: 4px 8px; border-radius: 5px; cursor: pointer; font-size: 10px; 
+      }
 
       .user-message { align-self: flex-end; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); }
       .ai-message { align-self: flex-start; background: #111; border: 1px solid #222; }
@@ -62,12 +62,19 @@
       #user-input {
         flex: 1; background: #000; border: 1px solid #333;
         color: white; padding: 12px; border-radius: 12px; outline: none;
+        font-size: 14px;
       }
 
+      .icon-btn {
+        width: 42px; height: 42px; border-radius: 50%;
+        border: 1px solid #333; background: #111; color: white;
+        cursor: pointer; display: flex; align-items: center; justify-content: center;
+        transition: 0.2s; flex-shrink: 0;
+      }
+      .icon-btn:hover { background: #222; border-color: #fff; }
+      .icon-btn svg { width: 20px; height: 20px; }
+      
       #img-preview { height: 40px; border-radius: 5px; display: none; border: 1px solid #00ff7f; }
-
-      .action-btn { background: #222; color: white; border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-      #send-btn { background: #fff; color: #000; width: auto; padding: 0 20px; font-weight: bold; }
     </style>
   </head>
 
@@ -83,33 +90,41 @@
     <main class="player-main">
       <div class="chat-shell">
         <div id="chat-history"></div>
-        <div id="ai-status" class="ai-loading">TYPING</div>
+        <div id="ai-status" class="ai-loading">THINKING...</div>
         <div class="chat-input-area">
           <input type="file" id="file-input" accept="image/*" style="display:none">
-          <button class="action-btn" onclick="document.getElementById('file-input').click()" title="Attach Image">📎</button>
+          <button class="icon-btn" onclick="document.getElementById('file-input').click()" title="Attach Image">
+            <i data-lucide="paperclip"></i>
+          </button>
           <img id="img-preview" src="">
-          <input type="text" id="user-input" placeholder="Ask anything (or type /clear)..." autocomplete="off">
-          <button id="send-btn" class="action-btn">SEND</button>
+          <input type="text" id="user-input" placeholder="Type a message or /clear..." autocomplete="off">
+          <button id="send-btn" class="icon-btn">
+            <i data-lucide="send"></i>
+          </button>
         </div>
       </div>
     </main>
 
     <script>
+      // Initialize Lucide Icons
+      lucide.createIcons();
+
       const GEMINI_API_KEY = "AIzaSyDEGQ7l66MwgwRVwwfDAszj4f82mYgfHpo";
       const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
       const historyBox = document.getElementById('chat-history');
       const userInput = document.getElementById('user-input');
+      const aiStatus = document.getElementById('ai-status');
       const fileInput = document.getElementById('file-input');
       const imgPreview = document.getElementById('img-preview');
-      const aiStatus = document.getElementById('ai-status');
 
       let sessionMessages = JSON.parse(localStorage.getItem('solace_chat_history')) || [];
       let currentImageData = null;
 
-      // Handle Image selection
+      // Handle Image Selection
       fileInput.onchange = e => {
         const file = e.target.files[0];
+        if(!file) return;
         const reader = new FileReader();
         reader.onload = () => {
           currentImageData = reader.result.split(',')[1];
@@ -119,27 +134,39 @@
         reader.readAsDataURL(file);
       };
 
-      function renderMessage(text, role) {
+      // Typing Effect Logic
+      async function typeEffect(element, text) {
+        let currentText = "";
+        const words = text.split(" ");
+        for (const word of words) {
+          currentText += word + " ";
+          element.innerHTML = marked.parse(currentText);
+          element.querySelectorAll('pre').forEach(pre => addCopyButton(pre));
+          historyBox.scrollTop = historyBox.scrollHeight;
+          await new Promise(r => setTimeout(r, 25)); // Fast typing
+        }
+        hljs.highlightAll();
+      }
+
+      function addCopyButton(pre) {
+        if (pre.querySelector('.copy-btn')) return;
+        const btn = document.createElement('button');
+        btn.className = 'copy-btn';
+        btn.innerText = 'COPY';
+        btn.onclick = () => {
+          const code = pre.querySelector('code').innerText;
+          navigator.clipboard.writeText(code);
+          btn.innerText = 'COPIED';
+          setTimeout(() => btn.innerText = 'COPY', 2000);
+        };
+        pre.appendChild(btn);
+      }
+
+      function createMessageElement(role) {
         const div = document.createElement('div');
         div.className = `message ${role === 'user' ? 'user-message' : 'ai-message'}`;
-        div.innerHTML = marked.parse(text);
-        
-        // Add Copy Buttons to Code Blocks
-        div.querySelectorAll('pre').forEach(pre => {
-          const btn = document.createElement('button');
-          btn.className = 'copy-btn';
-          btn.innerText = 'COPY';
-          btn.onclick = () => {
-            navigator.clipboard.writeText(pre.innerText.replace('COPY', ''));
-            btn.innerText = 'COPIED!';
-            setTimeout(() => btn.innerText = 'COPY', 2000);
-          };
-          pre.appendChild(btn);
-        });
-
         historyBox.appendChild(div);
-        historyBox.scrollTop = historyBox.scrollHeight;
-        hljs.highlightAll();
+        return div;
       }
 
       async function askAI() {
@@ -152,18 +179,18 @@
           userInput.value = ''; return;
         }
 
-        renderMessage(text || "[Sent an Image]", 'user');
+        // Render User Message
+        const userDiv = createMessageElement('user');
+        userDiv.innerText = text || "[Image Sent]";
         userInput.value = '';
         aiStatus.style.display = 'block';
 
-        const userPart = { text: text || "What is in this image?" };
-        const parts = [userPart];
+        // Prepare API Payload
+        const parts = [{ text: text || "Describe this image." }];
         if (currentImageData) {
           parts.push({ inline_data: { mime_type: "image/jpeg", data: currentImageData } });
         }
-
-        // Add to history
-        sessionMessages.push({ role: 'user', parts: [{ text: text || "[Image]" }] });
+        sessionMessages.push({ role: 'user', parts });
 
         try {
           const response = await fetch(API_URL, {
@@ -175,13 +202,16 @@
           const data = await response.json();
           const aiText = data.candidates[0].content.parts[0].text;
           
-          renderMessage(aiText, 'ai');
+          aiStatus.style.display = 'none';
+          const aiDiv = createMessageElement('ai');
+          await typeEffect(aiDiv, aiText);
+
           sessionMessages.push({ role: 'model', parts: [{ text: aiText }] });
           localStorage.setItem('solace_chat_history', JSON.stringify(sessionMessages));
         } catch (e) {
-          renderMessage("## Error\nCheck API Key or Connection.", 'ai');
-        } finally {
           aiStatus.style.display = 'none';
+          createMessageElement('ai').innerText = "Connection error. Please try again.";
+        } finally {
           currentImageData = null;
           imgPreview.style.display = 'none';
           fileInput.value = '';
@@ -189,11 +219,31 @@
       }
 
       document.getElementById('send-btn').onclick = askAI;
-      userInput.onkeypress = e => e.key === 'Enter' && askAI();
-      
-      // Init
-      if (sessionMessages.length) sessionMessages.forEach(m => renderMessage(m.parts[0].text, m.role));
-      else renderMessage("# S0LACE AI\nSend text or images to begin. Type `/clear` to reset.", 'ai');
+      userInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') askAI();
+      });
+
+      // Sidebar Image Logic
+      function getAccent() { return localStorage.getItem("s0laceAccent") || "gray"; }
+      function updateSideIcons() {
+        const accent = getAccent();
+        document.querySelectorAll(".side-icon").forEach(link => {
+          const icon = link.dataset.icon;
+          const img = link.querySelector("img");
+          const isActive = location.pathname.endsWith(link.getAttribute("href"));
+          link.classList.toggle("active", isActive);
+          img.src = `thumbs/${icon}/${isActive ? accent : "gray"}.png`;
+        });
+      }
+
+      // Load History on Init
+      if (sessionMessages.length > 0) {
+        sessionMessages.forEach(m => {
+          const div = createMessageElement(m.role === 'user' ? 'user' : 'ai');
+          div.innerHTML = marked.parse(m.parts[0].text);
+        });
+      }
+      updateSideIcons();
     </script>
   </body>
 </html>
