@@ -2114,28 +2114,21 @@ a.game-card img {
     text-decoration: none;
     border: none;
 }
-
-  game-card {
-    /* REMOVES THE GREY LINE BOX */
+.game-card {
+    /* REMOVES THE BOX/BORDER */
     border: none !important;
-    background: transparent !important;
-    box-shadow: none !important;
     outline: none !important;
+    box-shadow: none !important;
+    background: transparent !important; /* Removes any grey background fill */
 
-    /* ADDS THE CURVES */
-    border-radius: 20px !important; /* Adjust this number for more/less curve */
-    overflow: hidden !important;    /* Forces the image inside to respect the curve */
-    
-    /* PREVENTS WEIRD LINK BEHAVIOR */
-    display: block; 
-    text-decoration: none !important;
+    /* APPLIES THE CURVES */
+    border-radius: 20px; /* Adjust this to make it more or less round */
+    overflow: hidden;    /* Important: Clips the image corners to match the card */
 }
 
-  /* 1. Clear the container link */
-game-card {
+/* Ensure the image inside also follows the curve */
+.game-card img {
     border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-    background: transparent !important;
-    text-decoration: none !important;
+    border-radius: 20px; 
+    display: block;
 }
