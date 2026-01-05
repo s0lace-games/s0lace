@@ -2049,3 +2049,25 @@ a.game-card img {
   cursor: pointer;
   text-decoration: none;
 }
+
+  .game-card {
+  outline: none !important;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.game-card:focus,
+.game-card:focus-visible,
+.game-card:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.game-thumb {
+  overflow: hidden; /* THIS IS CRITICAL */
+  border-radius: 14px; /* or whatever you use */
+  background: transparent;
+}
+
