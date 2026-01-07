@@ -13,9 +13,6 @@ import { baremuxPath } from "@mercuryworkshop/bare-mux/node";
 import { handleAI } from "./ai.js";
 
 const publicPath = fileURLToPath(new URL("../public/", import.meta.url));
-app.post("/api/ai", handleAI);
-app.use(express.json());
-app.use("/api", aiRoutes);
 
 
 // Wisp Configuration
@@ -98,6 +95,8 @@ fastify.server.on("listening", () => {
     }:${address.port}`
   );
 });
+
+fastify.post("/api/ai", aiRoute);
 
 // Shutdown handlers
 process.on("SIGINT", shutdown);
