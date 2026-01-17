@@ -214,5 +214,28 @@
         }
       })();
     </script>
+
+    <script>
+/* === MEDIA STABILITY FIX === */
+
+// Remove service workers (they break proxy streams)
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.getRegistrations?.().then(r =>
+    r.forEach(reg => reg.unregister())
+  );
+  Object.defineProperty(navigator, "serviceWorker", {
+    value: undefined
+  });
+}
+
+// Safe URL guard
+const _URL = window.URL;
+window.URL = function(u, b) {
+  try { return new _URL(u, b); }
+  catch { return new _URL(location.href); }
+};
+window.URL.prototype = _URL.prototype;
+</script>
+
   </body>
 </html>
