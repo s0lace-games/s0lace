@@ -13,4 +13,12 @@ https://s0lace.fly.dev
 4. Settings:
    - Build Command: `npm install --omit=dev`
    - Start Command: `npm start`
-5. Deploy 
+5. Deploy
+
+ ## Credits (cus i stole all these guyses code and i feel really bad go support them)
+
+- [55GMS](https://github.com/55gms/55MS) - ALOT of the games and media idea
+- [3kh0](https://gitlab.com/3kh0/3kh0-assets) - Some of games
+- [gn-math](https://github.com/gn-math) - so many games i love you
+- [scramjet](https://github.com/MercuryWorkshop/scramjet) - stole like all proxy code
+- [chatgpt] - helping me debug every error i encounter
