@@ -240,6 +240,27 @@
       }
       updateSideIcons();
     </script>
+
+    <iframe
+  id="frame"
+  allowfullscreen
+  allow="fullscreen"
+></iframe>
+
+<script>
+  const params = new URLSearchParams(location.search);
+  const src = params.get("src");
+  const iframe = document.getElementById("frame");
+
+  if (!iframe) {
+    console.error("iframe #frame not found");
+  } else if (src) {
+    iframe.src = src.startsWith("/scramjet/")
+      ? src
+      : "/scramjet/" + src;
+  }
+</script>
+
 <script>
   const params = new URLSearchParams(location.search);
   const src = params.get("src");
