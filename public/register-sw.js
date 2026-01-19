@@ -5,21 +5,6 @@
   const SW_URL = "/sw.js";
   const SW_SCOPE = "/";
 
-  (async () => {
-  if (!("serviceWorker" in navigator)) return;
-
-  const reg = await navigator.serviceWorker.register("/sw.js");
-
-  if (!navigator.serviceWorker.controller) {
-    console.warn("[SW] No controller, reloading once");
-    location.reload();
-    return;
-  }
-
-  console.log("[SW] Controller active");
-})();
-
-
   try {
     const hasController = !!navigator.serviceWorker.controller;
     const bootstrapped = sessionStorage.getItem("sw_bootstrap_done");
