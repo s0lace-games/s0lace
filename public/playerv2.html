@@ -241,8 +241,10 @@
       updateSideIcons();
     </script>
 
-
 <script>
+  const params = new URLSearchParams(location.search);
+  const src = params.get("src");
+  const iframe = document.getElementById("frame");
 
   if (!iframe) {
     console.error("iframe #frame not found");
@@ -254,6 +256,10 @@
 </script>
 
 <script>
+  const params = new URLSearchParams(location.search);
+  const src = params.get("src");
+
+  const iframe = document.getElementById("frame");
 
   if (!src) {
     console.error("No src provided");
