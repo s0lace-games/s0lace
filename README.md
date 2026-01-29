@@ -18,7 +18,8 @@ https://s0lace.fly.dev
  ## Credits (cus i stole all these guyses code and i feel really bad go support them)
 
 - [55GMS](https://github.com/55gms/55GMS) - ALOT of the games and media idea
-- [3kh0](https://gitlab.com/3kh0/3kh0-assets) - Some of games
+- [3kh0](https://gitlab.com/3kh0/3kh0-assets) - a few games
 - [gn-math](https://github.com/gn-math) - so many games i love you
 - [scramjet](https://github.com/MercuryWorkshop/scramjet) - stole like all proxy code
 - [chatgpt] - helping me debug every error i encounter
+- [truffled](https://truffled.lol) - took webports of games 
