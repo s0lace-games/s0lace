@@ -24,7 +24,7 @@ window.LOADER_MESSAGES = [
   "my looney tunes bump is healed",
   "s0lace.fly.dev is shutting down",
   "fly.dev is back baby",
-  "s0lacerebirth.fly.dev,
+  "s0lacerebirth.fly.dev",
   "READ MY ANNOUNCMENTS",
   "project ocho x s0lace coming soon",
   "need to fix a bunch of sht",
