@@ -1,7 +1,7 @@
 # s0lace
 cool site with lots of games, fast proxy, and every movie you want
 
-https://s0lace.fly.dev
+https://s0lace-qug8.onrender.com/
 
 ##  Quick Deploy
 ## **NOTE:** S0LACE Cannot be hosted as a static site on sites such as Vercel, Github Pages, Netfliy, etc.
