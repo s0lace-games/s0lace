@@ -159,33 +159,6 @@ applyCustomCursor();
     return t;
   }
 
-  (() => {
-  // Prevent showing again if dismissed
-  if (localStorage.getItem("announcementDismissed")) return;
-
-  const announcement = document.createElement("div");
-  announcement.id = "global-announcement";
-
-  announcement.innerHTML = `
-    FALSE ALARM GUYS S0LACE.FLY.DEV IS HERE TO STAY
-  `;
-
-  // Click on announcement body → close
-  announcement.addEventListener("click", () => {
-    localStorage.setItem("announcementDismissed", "true");
-    announcement.remove();
-  });
-
-  // Click on "Read more" → go to updates page
-  announcement.querySelector(".read-more").addEventListener("click", (e) => {
-    e.stopPropagation();
-    window.location.href = "/updates.html";
-  });
-
-  document.body.appendChild(announcement);
-})();
-
-
   /* ===========================================================
       BACKGROUND
      =========================================================== */
